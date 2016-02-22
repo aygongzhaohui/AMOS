@@ -11,6 +11,7 @@
 
 #include <time.h>
 #include <vector>
+#include <set>
 
 #define MAX_INTTYPE_VAL(type) (~(1 << (sizeof(type) * 8 - 1)))
 
@@ -23,6 +24,8 @@ namespace amos
 
 	typedef std::vector<TIMER> TimerVec;
 	typedef TimerVec::iterator TimerVecIter;
+	typedef std::set<TIMER> TimerSet;
+	typedef TimerSet::iterator TimerVecIter;
 
 	typedef long MSEC;
 

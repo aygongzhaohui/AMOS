@@ -18,13 +18,26 @@ namespace amos
     class EventHandler
     {
     public:
-		enum
-		{
-			READ_MASK = (1 << 0),
-			WRITE_MASK = (1 << 1),
-			TIMER_MASK = (1 << 5),
-			ERROR_MASK = (1 << 7)
-		};
+        enum
+        {
+            READ_MASK = (1 << 0),
+            WRITE_MASK = (1 << 1),
+            TIMER_MASK = (1 << 5),
+            ERROR_MASK = (1 << 7)
+        };
+
+        class Creator
+        {
+        public:
+            virtual EventHandler * Create()
+            {
+                return NULL;
+            }
+
+            virtual void Destroy(EventHandler * handler)
+            {
+            }
+        };
 
     public:
         EventHandler() : reactor_(NULL)
@@ -67,48 +80,68 @@ namespace amos
         }
 
         Reactor * reactor(Reactor * p = NULL)
-		{
-			reactor_ = p;
-			return reactor_;
-		}
+        {
+            reactor_ = p;
+            return reactor_;
+        }
 
-		void FetchEvents(EvMask & r, TimerVec & tl)
-		{
-			tl.clear();
-			r = rEvents_; rEvents_ = 0;
-			tl.swap(timerList_);
-		}
+        void FetchEvents(EvMask & r, TimerVec & tl)
+        {
+            tl.clear();
+            r = rEvents_; rEvents_ = 0;
+            tl.swap(toList_);
+        }
 
-		void SetEvents(EvMask e)
-		{
-			rEvents_ |= e;
-		}
+        void SetEvents(EvMask e)
+        {
+            rEvents_ |= e;
+        }
 
-		void AppendTimer(TIMER t)
-		{
-			timerList_.push_back(t);
-		}
+        EvMask REvents() const
+        {
+            return rEvents_;
+        }
 
+        void SetTimeout(TIMER t)
+        {
+            toList_.push_back(t);
+        }
+
+        void SetTimer(TIMER t)
+        {
+            timerSet_.insert(t);
+        }
+
+        void RMTimer(TIMER t)
+        {
+            timerSet_.erase(t);
+        }
 
     private:
         Reactor * reactor_;
-		EvMask rEvents_;
-		TimerVec timerList_;
+        EvMask rEvents_;
+        TimerSet timerSet_;
+        TimerVec toList_;
     };
 
-    class EventHandlerCreator
+    struct RegHandler
     {
-    public:
-        virtual EventHandler * Create()
-        {
-            return NULL;
-        }
-
-        virtual void Destroy(EventHandler * handler)
+        RegHandler(EventHandler * h,
+                EvMask e,
+                Eventhandler::Creator * c = NULL) :
+            events(e), handler(h), creator(c)
         {
         }
+        EvMask events;
+        EventHandler * handler;
+        Eventhandler::Creator * creator;
     };
+    typedef EventHandler::Creator EventHandlerCreator; 
+    typedef std::map<HANDLE, RegHandler> EventHandlerMap;
+    typedef EventHandlerMap::iterator EventHandlerMapIter;
 
+    typedef std::vector<EventHandler *> EventHandlerVec;
+    typedef EventHandlerVec::iterator EventHandlerVecIter;
 
 }
 

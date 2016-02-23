@@ -10,6 +10,7 @@
 #define _BASE_HANDLER_H_
 
 #include "basedef.h"
+#include <map>
 
 namespace amos
 {
@@ -23,7 +24,8 @@ namespace amos
             READ_MASK = (1 << 0),
             WRITE_MASK = (1 << 1),
             TIMER_MASK = (1 << 5),
-            ERROR_MASK = (1 << 7)
+            ERROR_MASK = (1 << 7),
+			ALL_MASK = (~0U)
         };
 
         class Creator
@@ -126,15 +128,18 @@ namespace amos
 
     struct RegHandler
     {
+		RegHandler() : events(0), handler(NULL), creator(NULL)
+		{
+		}
         RegHandler(EventHandler * h,
                 EvMask e,
-                Eventhandler::Creator * c = NULL) :
+                EventHandler::Creator * c = NULL) :
             events(e), handler(h), creator(c)
         {
         }
         EvMask events;
         EventHandler * handler;
-        Eventhandler::Creator * creator;
+        EventHandler::Creator * creator;
     };
     typedef EventHandler::Creator EventHandlerCreator; 
     typedef std::map<HANDLE, RegHandler> EventHandlerMap;

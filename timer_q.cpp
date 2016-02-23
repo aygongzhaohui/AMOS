@@ -12,6 +12,8 @@
 
 using namespace amos;
 
+TIMER TimerQ::sNextId_ = 1; // timer id start from 1
+
 TIMER TimerQ::RegisterTimer(EventHandler * handler, MSEC delay)
 {
     if (delay <= 0 || !handler) return INVALID_TIMER;
@@ -38,8 +40,8 @@ MSEC TimerQ::Schedule(EventHandlerVec & list)
         if (t <= 0)
         {// timeout, and remove from tq_
             handler->SetTimeout(p->Id());
-            handler->SetEvents(TIMER_MASK); 
-            if (handler->REvents() == TIMER_MASK)
+            handler->SetEvents(EventHandler::TIMER_MASK); 
+            if (handler->REvents() == EventHandler::TIMER_MASK)
             {// have not add into the timeout list of the handler
                 list.push_back(handler);
             }

@@ -13,7 +13,7 @@
 
 #include "socketstream.h"
 
-using namespace base;
+using namespace amos;
 
 SocketStream::SocketStream()
 {

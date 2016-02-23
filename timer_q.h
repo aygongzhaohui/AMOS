@@ -33,9 +33,12 @@ namespace amos
 		typedef TimerSet::iterator TimerSetIter;
 		typedef std::map<TIMER, Timer> TimerMap;
 		typedef TimerMap::iterator TimerMapIter;
+		typedef TimerMap::const_iterator TimerMapConstIter;
 
 	private:
-		static TIMER sNextId_ = 1; // timer id start from 1
+		static TIMER sNextId_; // timer id start from 1
+
+	public:
 		static const TIMER INVALID_TIMER = 0; 
 
 	public:
@@ -53,6 +56,7 @@ namespace amos
 
 		int RemoveTimer(TIMER id)
 		{
+			if (id == INVALID_TIMER) return -1; 
 			TimerMapIter iter = timers_.find(id);
 			if (iter == timers_.end()) return -1;
 			tq_.erase(&(iter->second));
@@ -63,7 +67,8 @@ namespace amos
 
 		EventHandler * Handler(TIMER id) const
 		{
-			TimerMapIter iter = timers_.find(id);
+			if (id == INVALID_TIMER) return NULL; 
+			TimerMapConstIter iter = timers_.find(id);
 			if (iter == timers_.end()) return NULL;
 			return iter->second.Handler();
 		}
@@ -74,16 +79,19 @@ namespace amos
 		 *
 		 * @param	id
 		 */
-		void RestTimer(TIMER id)
+		int ResetTimer(TIMER id)
 		{
+			if (id == INVALID_TIMER) return -1; 
 			TimerMapIter iter = timers_.find(id);
 			assert(iter != timers_.end());
+			if (iter == timers_.end()) return -1;
 			Timer & t = iter->second;
 			if (tq_.find(&t) != tq_.end())
 			{
 				t.Reset();
 				tq_.insert(&t);
 			}
+			return 0;
 		}
 
 		/**

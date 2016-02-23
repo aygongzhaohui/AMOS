@@ -20,7 +20,7 @@ namespace amos
 		Timer(TIMER timerId, MSEC d, EventHandler *h = NULL)
 			: id_(timerId), delay_(d), handler_(h) 
 		{
-			TimeNow(&startTime_);
+			TimeNow(startTime_);
 		}
 
 		/**
@@ -29,10 +29,10 @@ namespace amos
 		 * @return	>0  remain time for timeout
 		 *          <=0 expired time
 		 */
-		MSEC CheckTO()
+		MSEC CheckTO() const
 		{
 			MSEC elapse = TimeDiffNow(startTime_);
-			return (delay - elapse);
+			return (delay_ - elapse);
 		}
 
 		/**
@@ -40,7 +40,7 @@ namespace amos
 		 */
 		void Reset()
 		{
-			TimeNow(&startTime_);
+			TimeNow(startTime_);
 		}
 
 		bool operator==(const Timer & t) const

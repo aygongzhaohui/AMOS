@@ -8,7 +8,7 @@
 #ifndef _AMOS_SOCKET_
 #define _AMOS_SOCKET_
 
-#include "handle.h"
+#include "basedef.h"
 #include <unistd.h>
 
 namespace amos 

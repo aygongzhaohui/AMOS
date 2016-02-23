@@ -9,7 +9,7 @@
 #ifndef _AMOS_ACCEPTOR_H_
 #define _AMOS_ACCEPTOR_H_
 
-#include "handle.h"
+#include "basedef.h"
 #include <string>
 #include <sys/socket.h>
 #include <netinet/in.h>

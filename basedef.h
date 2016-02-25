@@ -44,7 +44,7 @@ namespace amos
      */
     MSEC TimeDiff(const TIMESTAMP & t1, const TIMESTAMP t2)
     {
-        return ((t2.tv_sec - t1.tv_sec) * 1000 + (t2.tv_nsec - t2.tv_nsec)/1000000);
+        return ((t2.tv_sec - t1.tv_sec) * 1000 + (t2.tv_nsec - t1.tv_nsec)/1000000);
     }
 
     void TimeNow(TIMESTAMP & t)
@@ -64,11 +64,14 @@ namespace amos
     MSEC TimeDiffNow(const TIMESTAMP & past)
     {
         TIMESTAMP now;
+		TimeNow(now);
+		/*
         clock_gettime(CLOCK_MONOTONIC, &now);
         if (now.tv_sec < past.tv_sec)
         {// impossible for run 136 years
             return -1;
         }
+		*/
         return TimeDiff(past, now);
     }
 

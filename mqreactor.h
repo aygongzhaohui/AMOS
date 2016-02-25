@@ -45,6 +45,23 @@ namespace amos
             return 0;
         }
 
+		virtual int SuspendHandler(EventHandler * p)
+		{
+			if (!p) return -1;
+            ScopeLock lock(mqlock_);
+            mq_.push_back(ReactorMsg(RMSG_SUSPEND, p));
+			return 0;
+		}
+
+		virtual int ResumeHandler(EventHandler * p)
+		{
+			if (!p) return -1;
+            ScopeLock lock(mqlock_);
+            mq_.push_back(ReactorMsg(RMSG_RESUME, p));
+			return 0;
+		}
+        
+
         virtual TIMER RegisterTimer(EventHandler * p, MSEC delay)
         {
             if (!p || delay <= 0) return -1;
@@ -62,6 +79,14 @@ namespace amos
             mq_.push_back(ReactorMsg(RMSG_RMTIMER, NULL, (long)timerId));
             return 0;
         }
+
+		virtual int DestroyHandler(EventHandler * p, EventHandler::Creator * creator)
+		{
+			if (!p) return -1;
+            ScopeLock lock(mqlock_);
+            mq_.push_back(ReactorMsg(RMSG_DESTROY, p, creator));
+			return 0;
+		}
 
         virtual int ResetTimer(TIMER timerId)
         {

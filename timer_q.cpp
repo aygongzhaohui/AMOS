@@ -32,7 +32,6 @@ TIMER TimerQ::RegisterTimer(TIMER timerId, EventHandler * handler, MSEC delay)
     Timer & t = timers_[timerId];
     t = Timer(timerId, delay, handler);
     tq_.insert(&t);
-    handler->SetTimer(timerId);
     return timerId;
 }
 
@@ -44,15 +43,20 @@ MSEC TimerQ::Schedule(EventHandlerVec & list)
         Timer * p = *iter;
         EventHandler * handler = p->Handler();
         assert(handler);
+		if (!handler || hanlder->IsSuspend())
+		{// if suspend then ignore
+			iter++; continue;
+		}
         MSEC t = p->CheckTO();
         if (t <= 0)
         {// timeout, and remove from tq_
-            handler->SetTimeout(p->Id());
-            handler->SetEvents(EventHandler::TIMER_MASK);
-            if (handler->REvents() == EventHandler::TIMER_MASK)
+            handler->SetTimeout(p->Id());//add to handler
+            if (handler->REvents() == 0)
             {// have not add into the timeout list of the handler
                 list.push_back(handler);
             }
+			// Set return events
+            handler->AddREvents(EventHandler::TIMER_MASK);
             tq_.erase(iter++);
         }
         else

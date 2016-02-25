@@ -50,7 +50,8 @@ namespace amos
 
         bool operator<(const Timer & t) const
         {
-            return (CheckTO() < t.CheckTO());
+			MSEC diff = TimeDiff(startTime_, t.startTime_);
+            return ((delay_ - t.delay_) < diff);
         }
 
         EventHandler * Handler() const

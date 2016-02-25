@@ -65,7 +65,6 @@ namespace amos
             if (iter == timers_.end()) return -1;
             tq_.erase(&(iter->second));
             timers_.erase(iter);
-
             return 0;
         }
 

@@ -20,8 +20,11 @@ namespace amos
         RMSG_REGHANDLER = 1,
         RMSG_RMHANDLER = 2,
         RMSG_REGTIMER = 3,
-        RMSG_RMTIMER = 4,
-        RMSG_RSTTIMER = 5
+		RMSG_SUSPEND = 4,
+		RMSG_RESUME = 5,
+        RMSG_RMTIMER = 6,
+		RMSG_DESTROY = 7,
+        RMSG_RSTTIMER = 8
     } ReactorMsgType;
 
     struct ReactorMsg

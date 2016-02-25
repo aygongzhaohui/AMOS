@@ -44,6 +44,26 @@ void MQReactor::ProcessMqMsg()
                 }
             }
             break;
+		case RMSG_SUSPEND:
+            {
+                EventHandler * handler = msg.handler;
+				Reactor::SuspendHandler(handler);
+			}
+			break;
+		case RMSG_RESUME:
+            {
+                EventHandler * handler = msg.handler;
+				Reactor::ResumeHandler(handler);
+			}
+			break;
+		case RMSG_DESTROY:
+			{
+                EventHandler * handler = msg.handler;
+                EventHandlerCreator * creator =
+                    (EventHandlerCreator*)msg.arg1.ptr;
+				Reactor::DestroyHandler(handler, creator);
+			}
+			break;
         case RMSG_REGTIMER:
             {
                 EventHandler * handler = msg.handler;

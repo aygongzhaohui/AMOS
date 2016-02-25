@@ -54,7 +54,7 @@ void Reactor::ProcessOneHandler(EventHandler * handler)
     //2.get all returned events
     EvMask ev = 0;
     TimerVec tv;
-    handler->FetchEvents(ev, tv);
+    handler->FetchREvents(ev, tv);
     if (ev == 0) return;
     //3.handle all timeout timer
     if (ev & EventHandler::TIMER_MASK)
@@ -68,7 +68,11 @@ void Reactor::ProcessOneHandler(EventHandler * handler)
             {// HandleTimeout
                 TIMER id = *titer;
                 int ret = handler->HandleTimeout(id);
-                if (ret) RemoveTimer(id);// remove the timer
+                if (ret)
+				{// need remove timer
+					timerQ_.RemoveTimer(id);
+					handler->RMTimer(id);
+				}
                 else ResetTimer(id);// reschedule the timer if ret==0
             }
         }
@@ -93,11 +97,7 @@ void Reactor::ProcessOneHandler(EventHandler * handler)
     {
         int ret = handler->HandleClose(handler->Handle(), closeMask);
         if (ret)
-        {
-            RemoveHandler(handler, EventHandler::ALL_MASK);
-            if (creator)
-                creator->Destroy(handler);
-        }
+			DestroyHandler(handler, creator);
     }
 }
 
@@ -114,6 +114,145 @@ void Reactor::HandleEvents(EventHandlerVec & list)
     }
 }
 
+int Reactor::RegisterHandler(EventHandler * p,
+		EvMask mask, EventHandlerCreator * creator)
+{
+	assert(p);
+	if (!p || !loop_) return -1;
+	// not in handler map
+	EventHandlerMapIter iter = handlerMap_.find(p->Handle());
+	if (iter == handlerMap_.end())
+	{
+		if (impl_->RegisterHandle(p->Handle(), mask) == 0)
+		{
+			handlerMap_[p->Handle()] = RegHandler(p, creator);
+			p->SetEvents(mask);
+		}
+		return 0;
+	}
+	// modify the registered event if is in the handler map
+	RegHandler & rh = iter->second;
+	assert(rh.handler == p);
+	if (rh.handler != p)
+	{// TODO log
+		return -1;
+	}
+	EvMask reg = (mask ^ p->Events()) & mask;
+	if (reg > 0)
+	{
+		p->SetEvents(p->Events() | mask);
+		return impl_->ModifyEvents(p->Handle(), p->Events());
+	}
+	return 0;
+}
+
+/**
+ * @brief 删除Handler,如果无注册事件的话
+ *        handler将会被移除
+ *
+ * @param    p
+ * @param    mask
+ *
+ * @return
+ */
+int Reactor::RemoveHandler(EventHandler * p, EvMask mask)
+{
+	assert(p);
+	if (!p || !loop_) return -1;
+	EventHandlerMapIter iter = handlerMap_.find(p->Handle());
+	if (iter == handlerMap_.end()) return 0;
+	RegHandler & rh = iter->second;
+	assert(rh.handler == p);
+	if (rh.handler != p)
+	{// TODO log
+		return -1;
+	}
+	EvMask reg = p->Events() & mask;
+	if (reg > 0)
+	{
+		if (reg == p->Events())
+		{
+			handlerMap_.erase(iter);
+			impl_->RemoveHandle(p->Handle());
+			// clear all the timer on this handler
+			TimerSet ts;
+			p->ClearTimers(ts);
+			TimerSetIter iter = ts.begin();
+			for (; iter != ts.end(); ++iter)
+				timerQ_.RemoveTimer(*iter);
+			p->SetEvents(0);
+			return 0;
+		}
+		else
+		{
+			if (impl_->ModifyEvents(p->Handle(), reg) == 0)
+				p->SetEvents(p->Events() & (~reg));
+		}
+	}
+	return 0;
+}
+
+
+int Reactor::SuspendHandler(EventHandler * p)
+{
+	assert(p);
+	if (!p || !loop_) return -1;
+	if (p->IsSuspend()) return 0;
+	EventHandlerMapIter iter = handlerMap_.find(p->Handle());
+	RegHandler & rh = iter->second;
+	assert(rh.handler == p);
+	if (rh.handler != p)
+	{// TODO log
+		return -1;
+	}
+	impl_->RemoveHandle(p->Handle());
+	p->Suspend();
+	return 0;
+}
+
+int Reactor::ResumeHandler(EventHandler * p)
+{
+	assert(p);
+	if (!p || !loop_) return -1;
+	if (!p->IsSuspend()) return 0;
+	EventHandlerMapIter iter = handlerMap_.find(p->Handle());
+	RegHandler & rh = iter->second;
+	assert(rh.handler == p);
+	if (rh.handler != p)
+	{// TODO log
+		return -1;
+	}
+	impl_->RegisterHandle(p->Handle(), p->Events());
+	p->Resume();
+	return 0;
+}
+
+
+
+TIMER Reactor::RegisterTimer(EventHandler * p, MSEC delay, TIMER id)
+{
+	assert(p);
+	if (!p) return TimerQ::INVALID_TIMER;
+	EventHandlerMapIter iter = handlerMap_.find(p->Handle());
+	RegHandler & rh = iter->second;
+	assert(rh.handler == p);
+	if (rh.handler != p)
+	{// TODO log
+		return TimerQ::INVALID_TIMER;
+	}
+	if (loop_)
+	{
+		TIMER ret = id;
+		if (id > 0)
+			ret = timerQ_.RegisterTimer(id, p, delay);
+		else
+			ret = timerQ_.RegisterTimer(p, delay);
+		if (ret > 0)
+			p->SetTimer(ret); // add the timerid to handler
+		return ret; 
+	}
+	return TimerQ::INVALID_TIMER;
+}
 
 
 

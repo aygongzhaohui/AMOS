@@ -103,14 +103,14 @@ int EPollReactor::Demultiplex(const EventHandlerMap & handlers,
             if (!handler) continue;
             if ((e.events & EPOLLERR) || (e.events & EPOLLHUP) || (!(e.events & EPOLLIN)))
             {
-                handler->SetEvents(EventHandler::ERROR_MASK);
+                handler->AddREvents(EventHandler::ERROR_MASK);
             }
             else
             {
                 if (e.events | EPOLLIN)
-                    handler->SetEvents(EventHandler::READ_MASK);
+                    handler->AddREvents(EventHandler::READ_MASK);
                 if (e.events | EPOLLOUT)
-                    handler->SetEvents(EventHandler::WRITE_MASK);
+                    handler->AddREvents(EventHandler::WRITE_MASK);
             }
             list.push_back(handler);
         }

@@ -116,13 +116,13 @@ int PollReactor::Demultiplex(const EventHandlerMap & handlers,
             }
             if ((e.revents & POLLERR) || (e.revents & POLLNVAL)
                     || (e.revents & POLLHUP) || (!(e.revents & POLLIN)))
-                handler->SetEvents(EventHandler::ERROR_MASK);
+                handler->AddREvents(EventHandler::ERROR_MASK);
             else
             {
                 if (e.revents | POLLIN)
-                    handler->SetEvents(EventHandler::READ_MASK);
+                    handler->AddREvents(EventHandler::READ_MASK);
                 if (e.revents | POLLOUT)
-                    handler->SetEvents(EventHandler::WRITE_MASK);
+                    handler->AddREvents(EventHandler::WRITE_MASK);
             }
             list.push_back(handler);
         }

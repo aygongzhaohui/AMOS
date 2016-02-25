@@ -39,6 +39,30 @@ namespace amos
 				return MQReactor::RemoveHandler(p, mask);
 		}
 
+		virtual int SuspendHandler(EventHandler * p)
+		{
+			if (IsReactorThread())
+				return Reactor::SuspendHandler(p);
+			else
+				return MQReactor::SuspendHandler(p);
+		}
+
+		virtual int ResumeHandler(EventHandler * p)
+		{
+			if (IsReactorThread())
+				return Reactor::ResumeHandler(p);
+			else
+				return MQReactor::ResumeHandler(p);
+		}
+
+		virtual int DestroyHandler(EventHandler * p, EventHandler::Creator * creator)
+		{
+			if (IsReactorThread())
+				return Reactor::DestroyHandler(p, creator);
+			else
+				return MQReactor::DestroyHandler(p, creator);
+		}
+
         virtual TIMER RegisterTimer(EventHandler * p, MSEC delay)
 		{
 			if (IsReactorThread())

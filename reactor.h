@@ -36,92 +36,34 @@ namespace amos
 
     public:
         virtual int RegisterHandler(EventHandler * p,
-                EvMask mask, EventHandlerCreator * creator = NULL)
-        {
-            assert(p);
-            if (!p || !loop_) return -1;
-            // not in handler map
-            EventHandlerMapIter iter = handlerMap_.find(p->Handle());
-            if (iter == handlerMap_.end())
-            {
-                if (impl_->RegisterHandle(p->Handle(), mask) == 0)
-                    handlerMap_[p->Handle()] = RegHandler(p, mask, creator);
-                return 0;
-            }
-            // modify the registered event if is in the handler map
-            RegHandler & rh = iter->second;
-            assert(rh.handler == p);
-            if (rh.handler != p)
-            {// TODO log
-                return -1;
-            }
-            EvMask reg = (mask ^ rh.events) & mask;
-            if (reg > 0)
-            {
-                rh.events |= mask;
-                return impl_->ModifyEvents(p->Handle(), rh.events);
-            }
-            return 0;
-        }
+                EvMask mask, EventHandlerCreator * creator = NULL);
 
         /**
          * @brief 删除Handler,如果无注册事件的话
-         *        handler将会被移除
+         *        handler将会被移除(并且删除所有相关timer)
          *
          * @param    p
          * @param    mask
          *
          * @return
          */
-        virtual int RemoveHandler(EventHandler * p, EvMask mask)
-        {
-            assert(p);
-            if (!p || !loop_) return -1;
-            EventHandlerMapIter iter = handlerMap_.find(p->Handle());
-            RegHandler & rh = iter->second;
-            assert(rh.handler == p);
-            if (rh.handler != p)
-            {// TODO log
-                return -1;
-            }
-            EvMask reg = rh.events & mask;
-            if (reg > 0)
-            {
-                if (reg == rh.events)
-                {
-                    handlerMap_.erase(iter);
-                    impl_->RemoveHandle(p->Handle());
-                    return 0;
-                }
-                else
-                {
-                    if (impl_->ModifyEvents(p->Handle(), reg) == 0)
-                        rh.events &= (~reg);
-                }
-            }
-            return 0;
-        }
-
+        virtual int RemoveHandler(EventHandler * p, EvMask mask);
+        
         virtual TIMER RegisterTimer(EventHandler * p,
-                MSEC delay, TIMER id = TimerQ::INVALID_TIMER)
-        {
-            assert(p);
-            EventHandlerMapIter iter = handlerMap_.find(p->Handle());
-            RegHandler & rh = iter->second;
-            assert(rh.handler == p);
-            if (rh.handler != p)
-            {// TODO log
-                return TimerQ::INVALID_TIMER;
-            }
-            if (loop_)
-            {
-                if (id > 0)
-                    return timerQ_.RegisterTimer(id, p, delay);
-                else
-                    return timerQ_.RegisterTimer(p, delay);
-            }
-            return TimerQ::INVALID_TIMER;
-        }
+                MSEC delay, TIMER id = TimerQ::INVALID_TIMER);
+
+		virtual int SuspendHandler(EventHandler * p);
+
+		virtual int ResumeHandler(EventHandler * p);
+        
+		virtual int DestroyHandler(EventHandler * p, EventHandler::Creator * creator)
+		{
+			if (!p) return -1;
+			RemoveHandler(p, EventHandler::ALL_MASK);
+            if (creator)
+				creator->Destroy(p);
+			return 0;
+		}
 
         virtual int RemoveTimer(TIMER timerId)
         {

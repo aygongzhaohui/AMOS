@@ -20,7 +20,7 @@
 
 #ifdef ENABLE_LOG
 
-namespace base 
+namespace base
 {
     void log_print(char * prefix, char * msg);
 }

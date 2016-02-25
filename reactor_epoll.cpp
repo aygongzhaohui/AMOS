@@ -1,9 +1,9 @@
 /**
  * @file reactor_epoll.cpp
- * @brief   
+ * @brief
  *
  * @author GongZhaohui
- * @version 
+ * @version
  * @date 2016-02-16
  */
 
@@ -21,13 +21,13 @@ using namespace amos;
 
 EPollReactor::EPollReactor()
 {
-	fd_ = -1;
+    fd_ = -1;
     fd_ = epoll_create1(0);
     if (fd_ < 0)
     {
-		std::string err = "epoll_create1 failed";
+        std::string err = "epoll_create1 failed";
         perror(err.c_str());
-		throw err;
+        throw err;
     }
 }
 
@@ -43,7 +43,7 @@ int EPollReactor::RegisterHandle(HANDLE h, EvMask events)
 {
     if (h == INVALID_HANDLE) return -1;
     unsigned tevents = 0;
-	tevents = EPOLLERR | EPOLLHUP;
+    tevents = EPOLLERR | EPOLLHUP;
     if (events | EventHandler::READ_MASK) tevents |= EPOLLIN;
     if (events | EventHandler::WRITE_MASK) tevents |= EPOLLOUT;
     struct epoll_event e; e.events = tevents; e.data.fd = h;
@@ -85,8 +85,8 @@ int EPollReactor::ModifyEvents(HANDLE h, EvMask events)
 }
 
 int EPollReactor::Demultiplex(const EventHandlerMap & handlers,
-						EventHandlerVec & list,
-						MSEC timeout)
+                        EventHandlerVec & list,
+                        MSEC timeout)
 {
     struct epoll_event revents[MAX_EPOLL_REVENTS];
     int ret = epoll_wait(fd_, revents, MAX_EPOLL_REVENTS, timeout);
@@ -94,27 +94,27 @@ int EPollReactor::Demultiplex(const EventHandlerMap & handlers,
     {
         for (int i = 0; i < ret; ++i)
         {
-			struct epoll_event & e = revents[i];
-			HANDLE h = e.data.fd;
-			EventHandlerMapCIter iter = handlers.find(h);
-			if (iter == handlers.end()) continue;
-			EventHandler * handler = iter->second.handler;
-			assert(handler);
-			if (!handler) continue;
+            struct epoll_event & e = revents[i];
+            HANDLE h = e.data.fd;
+            EventHandlerMapCIter iter = handlers.find(h);
+            if (iter == handlers.end()) continue;
+            EventHandler * handler = iter->second.handler;
+            assert(handler);
+            if (!handler) continue;
             if ((e.events & EPOLLERR) || (e.events & EPOLLHUP) || (!(e.events & EPOLLIN)))
-			{
-				handler->SetEvents(EventHandler::ERROR_MASK);
-			}
-			else
-			{
-				if (e.events | EPOLLIN)
-					handler->SetEvents(EventHandler::READ_MASK);
-				if (e.events | EPOLLOUT)
-					handler->SetEvents(EventHandler::WRITE_MASK);
-			}
-			list.push_back(handler);
-		}
-	}
+            {
+                handler->SetEvents(EventHandler::ERROR_MASK);
+            }
+            else
+            {
+                if (e.events | EPOLLIN)
+                    handler->SetEvents(EventHandler::READ_MASK);
+                if (e.events | EPOLLOUT)
+                    handler->SetEvents(EventHandler::WRITE_MASK);
+            }
+            list.push_back(handler);
+        }
+    }
     return ret;
 }
 

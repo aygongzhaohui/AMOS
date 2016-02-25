@@ -1,8 +1,8 @@
 /**
  * @file reactor_epoll.h
- * @brief   
+ * @brief  
  * @author GongZhaohui
- * @version 
+ * @version
  * @date 2016-02-16
  */
 
@@ -11,7 +11,7 @@
 #ifndef _REACTOR_EPOLL_H_
 #define _REACTOR_EPOLL_H_
 
-namespace amos 
+namespace amos
 {
 
     class EPollReactor : public ReactorImpl
@@ -27,8 +27,8 @@ namespace amos
         virtual int ModifyEvents(HANDLE h, EvMask events);
 
         virtual int Demultiplex(const EventHandlerMap & handlers,
-								EventHandlerVec & list,
-				                MSEC timeout);
+                                EventHandlerVec & list,
+                                MSEC timeout);
 
     private:
         int fd_;

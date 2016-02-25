@@ -1,8 +1,8 @@
 /**
  * @file thread.h
- * @brief   
+ * @brief
  * @author GongZhaohui
- * @version 
+ * @version
  * @date 2016-02-18
  */
 

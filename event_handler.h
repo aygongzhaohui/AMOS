@@ -1,8 +1,8 @@
 /**
  * @file handler.h
- * @brief   
+ * @brief
  * @author GongZhaohui
- * @version 
+ * @version
  * @date 2016-02-05
  */
 
@@ -25,7 +25,7 @@ namespace amos
             WRITE_MASK = (1 << 1),
             TIMER_MASK = (1 << 5),
             ERROR_MASK = (1 << 7),
-			ALL_MASK = (~0U)
+            ALL_MASK = (~0U)
         };
 
         class Creator
@@ -128,9 +128,9 @@ namespace amos
 
     struct RegHandler
     {
-		RegHandler() : events(0), handler(NULL), creator(NULL)
-		{
-		}
+        RegHandler() : events(0), handler(NULL), creator(NULL)
+        {
+        }
         RegHandler(EventHandler * h,
                 EvMask e,
                 EventHandler::Creator * c = NULL) :
@@ -141,7 +141,7 @@ namespace amos
         EventHandler * handler;
         EventHandler::Creator * creator;
     };
-    typedef EventHandler::Creator EventHandlerCreator; 
+    typedef EventHandler::Creator EventHandlerCreator;
     typedef std::map<HANDLE, RegHandler> EventHandlerMap;
     typedef EventHandlerMap::iterator EventHandlerMapIter;
     typedef EventHandlerMap::const_iterator EventHandlerMapCIter;

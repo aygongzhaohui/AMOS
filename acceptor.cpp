@@ -1,14 +1,14 @@
 /**
  * @file acceptor.cpp
- * @brief   
+ * @brief
  *
  * @author GongZhaohui
- * @version 
+ * @version
  * @date 2016-02-16
  */
 
 #include "logger.h"
-#include "acceptor.h" 
+#include "acceptor.h"
 #include <string.h>
 #include <sys/types.h>
 #include <arpa/inet.h>

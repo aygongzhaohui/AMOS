@@ -1,8 +1,8 @@
 /**
  * @file acceptor.h
- * @brief   
+ * @brief
  * @author GongZhaohui
- * @version 
+ * @version
  * @date 2016-02-16
  */
 
@@ -26,7 +26,7 @@ namespace amos
         Acceptor(const std::string & ip, unsigned port);
 
         int Open();
-        
+
         int Accept(SocketStream & ss);
 
     private:

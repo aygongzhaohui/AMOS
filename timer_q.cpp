@@ -1,9 +1,9 @@
 /**
  * @file timer_q.cpp
- * @brief    
+ * @brief
  *
  * @author GongZhaohui
- * @version 
+ * @version
  * @date 2016-02-19
  */
 
@@ -21,7 +21,7 @@ TIMER TimerQ::AllocTimerId()
 
 TIMER TimerQ::RegisterTimer(EventHandler * handler, MSEC delay)
 {
-	return RegisterTimer(AllocTimerId(), handler, delay);
+    return RegisterTimer(AllocTimerId(), handler, delay);
 }
 
 TIMER TimerQ::RegisterTimer(TIMER timerId, EventHandler * handler, MSEC delay)
@@ -48,7 +48,7 @@ MSEC TimerQ::Schedule(EventHandlerVec & list)
         if (t <= 0)
         {// timeout, and remove from tq_
             handler->SetTimeout(p->Id());
-            handler->SetEvents(EventHandler::TIMER_MASK); 
+            handler->SetEvents(EventHandler::TIMER_MASK);
             if (handler->REvents() == EventHandler::TIMER_MASK)
             {// have not add into the timeout list of the handler
                 list.push_back(handler);

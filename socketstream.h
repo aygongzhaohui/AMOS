@@ -11,7 +11,7 @@
 #include "socket.h"
 #include <netinet/in.h>
 
-namespace amos 
+namespace amos
 {
 
     class SocketStream : public CSocket
@@ -29,24 +29,24 @@ namespace amos
         int set_tcp_nodelay(bool on);
 
         /**
-         * @brief   
+         * @brief
          *
          * @param   buffer
          * @param   size
          *
          * @return  >0: 发送的字节数
-         *          RET_SOCK_BUSY: 中断或者缓冲区满 
+         *          RET_SOCK_BUSY: 中断或者缓冲区满
          *          RET_SOCK_DEAD: 连接发生错误
          */
         int recv(char * buffer, unsigned size) const;
 
         /**
-         * @brief   
+         * @brief
          *
          * @param   buffer
          * @param   size
          *
-         * @return  RET_SOCK_BUSY: 中断或者缓冲区满 
+         * @return  RET_SOCK_BUSY: 中断或者缓冲区满
          *          RET_SOCK_DEAD: 连接发生错误
          */
         int send(const char * buffer, unsigned size) const;

@@ -1,8 +1,8 @@
 /**
  * @file reactor_impl.h
- * @brief	
+ * @brief
  * @author GongZhaohui
- * @version 
+ * @version
  * @date 2016-02-22
  */
 
@@ -15,31 +15,31 @@
 namespace amos
 {
 
-	class ReactorImpl
-	{
-	public:
-		virtual int RegisterHandle(HANDLE h, EvMask reg)
-		{
-			return -1;
-		}
+    class ReactorImpl
+    {
+    public:
+        virtual int RegisterHandle(HANDLE h, EvMask reg)
+        {
+            return -1;
+        }
 
-		virtual int RemoveHandle(HANDLE h)
-		{
-			return -1;
-		}
+        virtual int RemoveHandle(HANDLE h)
+        {
+            return -1;
+        }
 
-		virtual int ModifyEvents(HANDLE h, EvMask reg)
-		{
-			return -1;
-		}
+        virtual int ModifyEvents(HANDLE h, EvMask reg)
+        {
+            return -1;
+        }
 
-		virtual int Demultiplex(const EventHandlerMap & map,
-								EventHandlerVec & list,
-								MSEC timeout)
-		{
-			return -1;
-		}
-	};
+        virtual int Demultiplex(const EventHandlerMap & map,
+                                EventHandlerVec & list,
+                                MSEC timeout)
+        {
+            return -1;
+        }
+    };
 
 
 

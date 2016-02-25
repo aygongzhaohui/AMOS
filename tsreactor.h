@@ -9,12 +9,11 @@
 #ifndef _AMOS_TSREACTOR_H_
 #define _AMOS_TSREACTOR_H_
 
-#include "mqreactor.h"
 #include "thread.h"
+#include "mqreactor.h"
 
 namespace amos
 {
-
 	class TSReactor : public MQReactor
 	{
 	private:

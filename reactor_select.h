@@ -1,9 +1,9 @@
 /**
- * @file reactor_epoll.h
- * @brief
+ * @file reactor_select.h
+ * @brief	
  * @author GongZhaohui
- * @version
- * @date 2016-02-16
+ * @version 
+ * @date 2016-02-24
  */
 
 #include "reactor_impl.h"

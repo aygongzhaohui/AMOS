@@ -11,7 +11,7 @@
 #include "basedef.h"
 #include <unistd.h>
 
-namespace amos 
+namespace amos
 {
 
     class CSocket

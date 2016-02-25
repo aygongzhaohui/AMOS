@@ -1,10 +1,9 @@
 /**
- * @file ts_reactor.h
+ * @file mqreactor.h
  * @brief	
- *
  * @author GongZhaohui
  * @version 
- * @date 2016-02-23
+ * @date 2016-02-24
  */
 
 #ifndef _AMOS_MQ_REACTOR_H_
@@ -18,69 +17,69 @@
 namespace amos
 {
 
-	class MQReactor : public Reactor
-	{
-	protected:
-		typedef std::vector<ReactorMsg> ReactorMq;
+    class MQReactor : public Reactor
+    {
+    protected:
+        typedef std::vector<ReactorMsg> ReactorMq;
 
-	public:
+    public:
         MQReactor(ReactorImpl * impl) : Reactor(impl)
-		{
-		}
+        {
+        }
 
         virtual int RegisterHandler(EventHandler * p,
-				EvMask mask, EventHandlerCreator * creator = NULL)
-		{
-			if (!p) return -1;
-			ScopeLock lock(mqlock_);
-			mq_.push_back(ReactorMsg(
-						RMSG_REGHANDLER, p, (long)mask, (void *)creator));
-			return 0;
-		}
+                EvMask mask, EventHandlerCreator * creator = NULL)
+        {
+            if (!p) return -1;
+            ScopeLock lock(mqlock_);
+            mq_.push_back(ReactorMsg(
+                        RMSG_REGHANDLER, p, (long)mask, (void *)creator));
+            return 0;
+        }
 
         virtual int RemoveHandler(EventHandler * p, EvMask mask)
-		{
-			if (!p) return -1;
-			ScopeLock lock(mqlock_);
-			mq_.push_back(ReactorMsg(RMSG_RMHANDLER, p, (long)mask));
-			return 0;
-		}
+        {
+            if (!p) return -1;
+            ScopeLock lock(mqlock_);
+            mq_.push_back(ReactorMsg(RMSG_RMHANDLER, p, (long)mask));
+            return 0;
+        }
 
         virtual TIMER RegisterTimer(EventHandler * p, MSEC delay)
-		{
-			if (!p || delay <= 0) return -1;
-			TIMER timerId = timerQ_.AllocTimerId();
-			ScopeLock lock(mqlock_);
-			mq_.push_back(ReactorMsg(
-						RMSG_REGTIMER, p, (long)timerId, (long)delay));
-			return timerId;
-		}
+        {
+            if (!p || delay <= 0) return -1;
+            TIMER timerId = timerQ_.AllocTimerId();
+            ScopeLock lock(mqlock_);
+            mq_.push_back(ReactorMsg(
+                        RMSG_REGTIMER, p, (long)timerId, (long)delay));
+            return timerId;
+        }
 
         virtual int RemoveTimer(TIMER timerId)
-		{
-			if (timerId == TimerQ::INVALID_TIMER) return -1;
-			ScopeLock lock(mqlock_);
-			mq_.push_back(ReactorMsg(RMSG_RMTIMER, NULL, (long)timerId));
-			return 0;
-		}
+        {
+            if (timerId == TimerQ::INVALID_TIMER) return -1;
+            ScopeLock lock(mqlock_);
+            mq_.push_back(ReactorMsg(RMSG_RMTIMER, NULL, (long)timerId));
+            return 0;
+        }
 
-		virtual int ResetTimer(TIMER timerId)
-		{
-			if (timerId == TimerQ::INVALID_TIMER) return -1;
-			ScopeLock lock(mqlock_);
-			mq_.push_back(ReactorMsg(RMSG_RSTTIMER, NULL, (long)timerId));
-			return 0;
-		}
+        virtual int ResetTimer(TIMER timerId)
+        {
+            if (timerId == TimerQ::INVALID_TIMER) return -1;
+            ScopeLock lock(mqlock_);
+            mq_.push_back(ReactorMsg(RMSG_RSTTIMER, NULL, (long)timerId));
+            return 0;
+        }
 
         virtual void RunEventLoop();
 
-	protected:
-		virtual void ProcessMqMsg();
+    protected:
+        virtual void ProcessMqMsg();
 
-	protected:
-		ReactorMq mq_;
-		ThreadMutex mqlock_;
-	};
+    protected:
+        ReactorMq mq_;
+        ThreadMutex mqlock_;
+    };
 
 
 }

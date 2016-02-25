@@ -1,12 +1,14 @@
 /**
  * @file thread.cpp
- * @brief   
+ * @brief
  * @author GongZhaohui
- * @version 
+ * @version
  * @date 2016-02-18
  */
 
 #include <string>
+#include <sys/types.h>
+#include <sys/syscall.h>
 
 #include "thread.h"
 
@@ -17,7 +19,7 @@ TID Thread::CurrentThread()
 #ifdef WIN32
     return GetCurrentThreadId();
 #else
-    return pthread_self();
+    return syscall(SYS_gettid);
 #endif
 }
 

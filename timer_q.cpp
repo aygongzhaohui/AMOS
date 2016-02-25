@@ -14,11 +14,19 @@ using namespace amos;
 
 TIMER TimerQ::sNextId_ = 1; // timer id start from 1
 
+TIMER TimerQ::AllocTimerId()
+{
+    return __sync_fetch_and_add(&sNextId_, 1);// atomic add sNextId_
+}
+
 TIMER TimerQ::RegisterTimer(EventHandler * handler, MSEC delay)
 {
+	return RegisterTimer(AllocTimerId(), handler, delay);
+}
+
+TIMER TimerQ::RegisterTimer(TIMER timerId, EventHandler * handler, MSEC delay)
+{
     if (delay <= 0 || !handler) return INVALID_TIMER;
-    // atomic add sNextId_
-    TIMER timerId = __sync_fetch_and_add(&sNextId_, 1);
     // set the timer object
     assert(timers_.find(timerId) == timers_.end());
     Timer & t = timers_[timerId];

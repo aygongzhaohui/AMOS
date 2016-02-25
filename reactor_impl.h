@@ -10,6 +10,7 @@
 #define _AMOS_REACTOR_IMPL_H_
 
 #include "basedef.h"
+#include "event_handler.h"
 
 namespace amos
 {
@@ -32,7 +33,7 @@ namespace amos
 			return -1;
 		}
 
-		virtual int Demutiplex(EventHandlerMap & map,
+		virtual int Demultiplex(const EventHandlerMap & map,
 								EventHandlerVec & list,
 								MSEC timeout)
 		{

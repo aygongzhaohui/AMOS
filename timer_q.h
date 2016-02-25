@@ -42,6 +42,8 @@ namespace amos
 		static const TIMER INVALID_TIMER = 0; 
 
 	public:
+		TIMER AllocTimerId();
+
 		/**
 		 * @brief	Allocate a timer id and add the timer
 		 *          into the timer queue
@@ -53,6 +55,8 @@ namespace amos
 		 *          0 failed
 		 */
 		TIMER RegisterTimer(EventHandler * handler, MSEC delay);
+
+		TIMER RegisterTimer(TIMER id, EventHandler * handler, MSEC delay);
 
 		int RemoveTimer(TIMER id)
 		{

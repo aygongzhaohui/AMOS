@@ -39,7 +39,7 @@ namespace amos
 				EvMask mask, EventHandlerCreator * creator = NULL)
         {
             assert(p);
-            if (!p || !mask || !loop_) return -1;
+            if (!p || !loop_) return -1;
 			// not in handler map
             EventHandlerMapIter iter = handlerMap_.find(p->Handle());
 			if (iter == handlerMap_.end())
@@ -59,7 +59,7 @@ namespace amos
 			if (reg > 0)
 			{
 				rh.events |= mask;
-				return impl_->ModifyEvents(p->Handle(), reg);
+				return impl_->ModifyEvents(p->Handle(), rh.events);
 			}
             return 0;
         }
@@ -77,7 +77,7 @@ namespace amos
         {
             int ret = 0;
             assert(p);
-            if (!p || !mask || !loop_) return -1;
+            if (!p || !loop_) return -1;
             EventHandlerMapIter iter = handlerMap_.find(p->Handle());
             RegHandler & rh = iter->second;
             assert(rh.handler == p);
@@ -86,21 +86,25 @@ namespace amos
                 return -1;
             }
 			EvMask reg = rh.events & mask;
-			if (reg == rh.events)
+			if (reg > 0)
 			{
-				handlerMap_.erase(iter);
-				impl_->RemoveHandle(p->Handle());
-				return 0;
-			}
-			else
-			{
-				if (impl_->ModifyEvents(p->Handle(), reg) == 0)
-					rh.events &= (~reg);
+				if (reg == rh.events)
+				{
+					handlerMap_.erase(iter);
+					impl_->RemoveHandle(p->Handle());
+					return 0;
+				}
+				else
+				{
+					if (impl_->ModifyEvents(p->Handle(), reg) == 0)
+						rh.events &= (~reg);
+				}
 			}
             return 0;
         }
 
-        virtual TIMER RegisterTimer(EventHandler * p, MSEC delay)
+        virtual TIMER RegisterTimer(EventHandler * p,
+				MSEC delay, TIMER id = TimerQ::INVALID_TIMER)
         {
             assert(p);
             EventHandlerMapIter iter = handlerMap_.find(p->Handle());
@@ -112,7 +116,10 @@ namespace amos
             }
             if (loop_)
             {
-                return timerQ_.RegisterTimer(p, delay);
+				if (id > 0)
+					return timerQ_.RegisterTimer(id, p, delay);
+				else
+					return timerQ_.RegisterTimer(p, delay);
             }
             return TimerQ::INVALID_TIMER;
         }

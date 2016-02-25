@@ -144,6 +144,7 @@ namespace amos
     typedef EventHandler::Creator EventHandlerCreator; 
     typedef std::map<HANDLE, RegHandler> EventHandlerMap;
     typedef EventHandlerMap::iterator EventHandlerMapIter;
+    typedef EventHandlerMap::const_iterator EventHandlerMapCIter;
 
     typedef std::vector<EventHandler *> EventHandlerVec;
     typedef EventHandlerVec::iterator EventHandlerVecIter;

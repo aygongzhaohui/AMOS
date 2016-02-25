@@ -22,11 +22,14 @@ void Reactor::RunEventLoop()
 	while (loop_)
 	{
 		EventHandlerVec ehList;
+		//1.poll timer events
 		MSEC nextTimeout = timerQ_.Schedule(ehList);
 		if (nextTimeout > DEFAULT_REACT_INTERVAL) 
 			nextTimeout = DEFAULT_REACT_INTERVAL;
-		int ret = impl_->Demutiplex(handlerMap_, ehList, nextTimeout); 
-		if (ret > 0)
+		//2.poll I/O events
+		impl_->Demultiplex(handlerMap_, ehList, nextTimeout); 
+		//3.handle all events
+		if (ehList.size() > 0)
 			HandleEvents(ehList);
 		ehList.clear();
 	}
@@ -42,32 +45,33 @@ void Reactor::HandleEvents(EventHandlerVec & list)
 			EventHandler * handler = *iter;
 			assert(handler);
 			if (!handler) continue;
-			// validate handler
+			//1.validate handler
 			EventHandlerMapIter miter = handlerMap_.find(handler->Handle());
 			assert(miter != handlerMap_.end());
 			assert(miter->second.handler == handler);
 			if (miter == handlerMap_.end()) continue;
 			EventHandler::Creator * creator = miter->second.creator;
-			// get all returned events
+			//2.get all returned events
 			EvMask ev = 0;
 			TimerVec tv;
 			handler->FetchEvents(ev, tv);
-			// handle all timeout timer
 			if (ev == 0) continue;
+			//3.handle all timeout timer
 			if (ev & EventHandler::TIMER_MASK)
 			{
 				assert(tv.size() > 0);
 				if (tv.size() == 0) continue;
 				TimerVecIter titer = tv.begin();
-				// handle all timeout append on the handler
+				// traverse all timeid appended
 				for (; titer != tv.end(); ++titer)
 				{// HandleTimeout
 					TIMER id = *titer;
 					int ret = handler->HandleTimeout(id);
 					if (ret) RemoveTimer(id);// remove the timer
-					else ResetTimer(id);// reschedule the timer
+					else ResetTimer(id);// reschedule the timer if ret==0
 				}
 			}
+			//4.handle all I/O evetns
 			EvMask closeMask = 0;
 			if (ev & EventHandler::READ_MASK)
 			{

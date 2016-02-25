@@ -152,6 +152,8 @@ namespace amos
 	protected:
 		virtual void HandleEvents(EventHandlerVec & list);
 
+		virtual void HandleOneEvent(EventHandler * handler);
+
     protected:
         ReactorImpl * impl_;
         EventHandlerMap handlerMap_;

@@ -18,58 +18,55 @@ void MQReactor::ProcessMqMsg()
 		ScopeLock lock(mqlock_);
 		tmq.swap(mq_);
 	}
-	else
+	int i = 0;
+	while (i < tmq.size())
 	{
-		int i = 0;
-		while (i < tmq.size())
+		ReactorMsg &msg = tmq[i];
+		switch (msg.mtype)
 		{
-			ReactorMsg &msg = tmq[i];
-			switch (msg.mtype)
+		case RMSG_REGHANDLER: 
 			{
-			case RMSG_REGHANDLER: 
-				{
-					EventHandler * handler = msg.handler;
-					EvMask mask = (EvMask)msg.arg0.val;
-					EventHandlerCreator * creator =
-						(EventHandlerCreator*)msg.arg1.ptr;
-					if (Reactor::RegisterHandler(handler, mask, creator))
-					{// TODO log print
-					}
+				EventHandler * handler = msg.handler;
+				EvMask mask = (EvMask)msg.arg0.val;
+				EventHandlerCreator * creator =
+					(EventHandlerCreator*)msg.arg1.ptr;
+				if (Reactor::RegisterHandler(handler, mask, creator))
+				{// TODO log print
 				}
-				break;
-			case RMSG_RMHANDLER: 
-				{
-					EventHandler * handler = msg.handler;
-					EvMask mask = (EvMask)msg.arg0.val;
-					if (Reactor::RemoveHandler(handler, mask))
-					{// TODO log print
-					}
+			}
+			break;
+		case RMSG_RMHANDLER: 
+			{
+				EventHandler * handler = msg.handler;
+				EvMask mask = (EvMask)msg.arg0.val;
+				if (Reactor::RemoveHandler(handler, mask))
+				{// TODO log print
 				}
-				break;
-			case RMSG_REGTIMER: 
-				{
-					EventHandler * handler = msg.handler;
-					TIMER id = (TIMER)msg.arg0.val;
-					MSEC delay = (MSEC)msg.arg1.val;
-					if (Reactor::RegisterTimer(handler, delay, id))
-					{// TODO log print
-					}
+			}
+			break;
+		case RMSG_REGTIMER: 
+			{
+				EventHandler * handler = msg.handler;
+				TIMER id = (TIMER)msg.arg0.val;
+				MSEC delay = (MSEC)msg.arg1.val;
+				if (Reactor::RegisterTimer(handler, delay, id))
+				{// TODO log print
 				}
-				break;
-			case RMSG_RMTIMER: 
-				{
-					TIMER id = (TIMER)msg.arg0.val;
-					if (Reactor::RemoveTimer(id))
-					{// TODO log print
-					}
+			}
+			break;
+		case RMSG_RMTIMER: 
+			{
+				TIMER id = (TIMER)msg.arg0.val;
+				if (Reactor::RemoveTimer(id))
+				{// TODO log print
 				}
-				break;
-			default:
-				break;
-			}// end switch
-			++i;
-		}// end while
-	}// end if else
+			}
+			break;
+		default:
+			break;
+		}// end switch
+		++i;
+	}// end while
 }
 
 void MQReactor::RunEventLoop()

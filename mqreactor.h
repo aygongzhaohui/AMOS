@@ -35,6 +35,7 @@ namespace amos
 			ScopeLock lock(mqlock_);
 			mq_.push_back(ReactorMsg(
 						RMSG_REGHANDLER, p, (long)mask, (void *)creator));
+			return 0;
 		}
 
         virtual int RemoveHandler(EventHandler * p, EvMask mask)
@@ -42,6 +43,7 @@ namespace amos
 			if (!p) return -1;
 			ScopeLock lock(mqlock_);
 			mq_.push_back(ReactorMsg(RMSG_RMHANDLER, p, (long)mask));
+			return 0;
 		}
 
         virtual TIMER RegisterTimer(EventHandler * p, MSEC delay)
@@ -49,7 +51,9 @@ namespace amos
 			if (!p || delay <= 0) return -1;
 			TIMER timerId = timerQ_.AllocTimerId();
 			ScopeLock lock(mqlock_);
-			mq_.push_back(ReactorMsg(RMSG_REGTIMER, p, (long)timerId, (long)delay));
+			mq_.push_back(ReactorMsg(
+						RMSG_REGTIMER, p, (long)timerId, (long)delay));
+			return timerId;
 		}
 
         virtual int RemoveTimer(TIMER timerId)
@@ -57,6 +61,7 @@ namespace amos
 			if (timerId == TimerQ::INVALID_TIMER) return -1;
 			ScopeLock lock(mqlock_);
 			mq_.push_back(ReactorMsg(RMSG_RMTIMER, NULL, (long)timerId));
+			return 0;
 		}
 
 		virtual int ResetTimer(TIMER timerId)
@@ -64,6 +69,7 @@ namespace amos
 			if (timerId == TimerQ::INVALID_TIMER) return -1;
 			ScopeLock lock(mqlock_);
 			mq_.push_back(ReactorMsg(RMSG_RSTTIMER, NULL, (long)timerId));
+			return 0;
 		}
 
         virtual void RunEventLoop();

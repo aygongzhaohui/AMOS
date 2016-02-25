@@ -3,7 +3,7 @@ AR = ar
 
 INCLUDES = -I./ 
 TARGETS = test
-OBJS = reactor.o reactor_epoll.o socket.o socketstream.o acceptor.o logger.o thread.o
+OBJS = reactor.o socket.o socketstream.o acceptor.o logger.o thread.o reactor_epoll.o reactor_poll.o mqreactor.o tsreactor.o
 
 LDFLAGS = -lpthread
 

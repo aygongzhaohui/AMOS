@@ -65,9 +65,9 @@ namespace amos
 
     private:
         TIMER id_;
+        MSEC delay_;
         EventHandler * handler_;
         TIMESTAMP startTime_;
-        MSEC delay_;
     };
 
 }

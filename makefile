@@ -7,7 +7,7 @@ OBJS = reactor.o socket.o socketstream.o acceptor.o logger.o thread.o reactor_ep
 
 LDFLAGS = -lpthread
 
-CXXFLAGS = -g $(INCLUDES)
+CXXFLAGS = -g -Wall $(INCLUDES)
 #编译可执行程序
 EXETARGETS = $(CXX) $(CXXFLAGS) $^ -o $@ $(LIBS) $(LDFLAGS)
 #编译静态库文件

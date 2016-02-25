@@ -18,7 +18,7 @@ void MQReactor::ProcessMqMsg()
         ScopeLock lock(mqlock_);
         tmq.swap(mq_);
     }
-    int i = 0;
+    unsigned i = 0;
     while (i < tmq.size())
     {
         ReactorMsg &msg = tmq[i];

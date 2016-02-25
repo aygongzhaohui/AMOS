@@ -75,7 +75,6 @@ namespace amos
          */
         virtual int RemoveHandler(EventHandler * p, EvMask mask)
         {
-            int ret = 0;
             assert(p);
             if (!p || !loop_) return -1;
             EventHandlerMapIter iter = handlerMap_.find(p->Handle());

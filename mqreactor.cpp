@@ -44,26 +44,26 @@ void MQReactor::ProcessMqMsg()
                 }
             }
             break;
-		case RMSG_SUSPEND:
+        case RMSG_SUSPEND:
             {
                 EventHandler * handler = msg.handler;
-				Reactor::SuspendHandler(handler);
-			}
-			break;
-		case RMSG_RESUME:
+                Reactor::SuspendHandler(handler);
+            }
+            break;
+        case RMSG_RESUME:
             {
                 EventHandler * handler = msg.handler;
-				Reactor::ResumeHandler(handler);
-			}
-			break;
-		case RMSG_DESTROY:
-			{
+                Reactor::ResumeHandler(handler);
+            }
+            break;
+        case RMSG_DESTROY:
+            {
                 EventHandler * handler = msg.handler;
                 EventHandlerCreator * creator =
                     (EventHandlerCreator*)msg.arg1.ptr;
-				Reactor::DestroyHandler(handler, creator);
-			}
-			break;
+                Reactor::DestroyHandler(handler, creator);
+            }
+            break;
         case RMSG_REGTIMER:
             {
                 EventHandler * handler = msg.handler;
@@ -97,7 +97,7 @@ void MQReactor::RunEventLoop()
         //1. process all msgs in mq
         ProcessMqMsg();
         //2.poll I/O events
-		PollIOEvents(ehList);
+        PollIOEvents(ehList);
         //3.poll timer events
         timerQ_.Schedule(ehList);
         //4.handle all events

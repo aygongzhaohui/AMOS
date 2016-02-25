@@ -1,8 +1,8 @@
 /**
  * @file mqreactor.h
- * @brief	
+ * @brief
  * @author GongZhaohui
- * @version 
+ * @version
  * @date 2016-02-24
  */
 
@@ -45,22 +45,22 @@ namespace amos
             return 0;
         }
 
-		virtual int SuspendHandler(EventHandler * p)
-		{
-			if (!p) return -1;
+        virtual int SuspendHandler(EventHandler * p)
+        {
+            if (!p) return -1;
             ScopeLock lock(mqlock_);
             mq_.push_back(ReactorMsg(RMSG_SUSPEND, p));
-			return 0;
-		}
+            return 0;
+        }
 
-		virtual int ResumeHandler(EventHandler * p)
-		{
-			if (!p) return -1;
+        virtual int ResumeHandler(EventHandler * p)
+        {
+            if (!p) return -1;
             ScopeLock lock(mqlock_);
             mq_.push_back(ReactorMsg(RMSG_RESUME, p));
-			return 0;
-		}
-        
+            return 0;
+        }
+
 
         virtual TIMER RegisterTimer(EventHandler * p, MSEC delay)
         {
@@ -80,14 +80,6 @@ namespace amos
             return 0;
         }
 
-		virtual int DestroyHandler(EventHandler * p, EventHandler::Creator * creator)
-		{
-			if (!p) return -1;
-            ScopeLock lock(mqlock_);
-            mq_.push_back(ReactorMsg(RMSG_DESTROY, p, creator));
-			return 0;
-		}
-
         virtual int ResetTimer(TIMER timerId)
         {
             if (timerId == TimerQ::INVALID_TIMER) return -1;
@@ -99,6 +91,14 @@ namespace amos
         virtual void RunEventLoop();
 
     protected:
+        virtual int DestroyHandler(EventHandler * p, EventHandler::Creator * creator)
+        {
+            if (!p) return -1;
+            ScopeLock lock(mqlock_);
+            mq_.push_back(ReactorMsg(RMSG_DESTROY, p, creator));
+            return 0;
+        }
+
         virtual void ProcessMqMsg();
 
     protected:

@@ -1,8 +1,8 @@
 /**
  * @file tsreactor.h
- * @brief	
+ * @brief
  * @author GongZhaohui
- * @version 
+ * @version
  * @date 2016-02-24
  */
 
@@ -14,84 +14,85 @@
 
 namespace amos
 {
-	class TSReactor : public MQReactor
-	{
-	private:
-		bool IsReactorThread();
+    class TSReactor : public MQReactor
+    {
+    private:
+        bool IsReactorThread();
 
-	public:
-		TSReactor(ReactorImpl * impl);
+    public:
+        TSReactor(ReactorImpl * impl);
 
         virtual int RegisterHandler(EventHandler * p,
-				EvMask mask, EventHandlerCreator * creator = NULL)
-		{
-			if (IsReactorThread())
-				return Reactor::RegisterHandler(p, mask, creator);
-			else
-				return MQReactor::RegisterHandler(p, mask, creator);
-		}
+                EvMask mask, EventHandlerCreator * creator = NULL)
+        {
+            if (IsReactorThread())
+                return Reactor::RegisterHandler(p, mask, creator);
+            else
+                return MQReactor::RegisterHandler(p, mask, creator);
+        }
 
         virtual int RemoveHandler(EventHandler * p, EvMask mask)
-		{
-			if (IsReactorThread())
-				return Reactor::RemoveHandler(p, mask);
-			else
-				return MQReactor::RemoveHandler(p, mask);
-		}
+        {
+            if (IsReactorThread())
+                return Reactor::RemoveHandler(p, mask);
+            else
+                return MQReactor::RemoveHandler(p, mask);
+        }
 
-		virtual int SuspendHandler(EventHandler * p)
-		{
-			if (IsReactorThread())
-				return Reactor::SuspendHandler(p);
-			else
-				return MQReactor::SuspendHandler(p);
-		}
+        virtual int SuspendHandler(EventHandler * p)
+        {
+            if (IsReactorThread())
+                return Reactor::SuspendHandler(p);
+            else
+                return MQReactor::SuspendHandler(p);
+        }
 
-		virtual int ResumeHandler(EventHandler * p)
-		{
-			if (IsReactorThread())
-				return Reactor::ResumeHandler(p);
-			else
-				return MQReactor::ResumeHandler(p);
-		}
-
-		virtual int DestroyHandler(EventHandler * p, EventHandler::Creator * creator)
-		{
-			if (IsReactorThread())
-				return Reactor::DestroyHandler(p, creator);
-			else
-				return MQReactor::DestroyHandler(p, creator);
-		}
+        virtual int ResumeHandler(EventHandler * p)
+        {
+            if (IsReactorThread())
+                return Reactor::ResumeHandler(p);
+            else
+                return MQReactor::ResumeHandler(p);
+        }
 
         virtual TIMER RegisterTimer(EventHandler * p, MSEC delay)
-		{
-			if (IsReactorThread())
-				return Reactor::RegisterTimer(p, delay);
-			else
-				return MQReactor::RegisterTimer(p, delay);
-		}
+        {
+            if (IsReactorThread())
+                return Reactor::RegisterTimer(p, delay);
+            else
+                return MQReactor::RegisterTimer(p, delay);
+        }
 
         virtual int RemoveTimer(TIMER timerId)
-		{
-			if (IsReactorThread())
-				return Reactor::RemoveTimer(timerId);
-			else
-				return MQReactor::RemoveTimer(timerId);
-		}
+        {
+            if (IsReactorThread())
+                return Reactor::RemoveTimer(timerId);
+            else
+                return MQReactor::RemoveTimer(timerId);
+        }
 
-		virtual int ResetTimer(TIMER timerId)
-		{
-			if (IsReactorThread())
-				return Reactor::ResetTimer(timerId);
-			else
-				return MQReactor::ResetTimer(timerId);
-		}
+        virtual int ResetTimer(TIMER timerId)
+        {
+            if (IsReactorThread())
+                return Reactor::ResetTimer(timerId);
+            else
+                return MQReactor::ResetTimer(timerId);
+        }
 
         virtual void RunEventLoop();
 
-	private:
-		TID thrdId_;
-	};
+    protected:
+        virtual int DestroyHandler(EventHandler * p, EventHandler::Creator * creator)
+        {
+            if (IsReactorThread())
+                return Reactor::DestroyHandler(p, creator);
+            else
+                return MQReactor::DestroyHandler(p, creator);
+        }
+
+    private:
+        TID thrdId_;
+    };
 
 }
 

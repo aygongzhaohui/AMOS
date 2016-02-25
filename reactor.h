@@ -48,22 +48,13 @@ namespace amos
          * @return
          */
         virtual int RemoveHandler(EventHandler * p, EvMask mask);
-        
+
         virtual TIMER RegisterTimer(EventHandler * p,
                 MSEC delay, TIMER id = TimerQ::INVALID_TIMER);
 
-		virtual int SuspendHandler(EventHandler * p);
+        virtual int SuspendHandler(EventHandler * p);
 
-		virtual int ResumeHandler(EventHandler * p);
-        
-		virtual int DestroyHandler(EventHandler * p, EventHandler::Creator * creator)
-		{
-			if (!p) return -1;
-			RemoveHandler(p, EventHandler::ALL_MASK);
-            if (creator)
-				creator->Destroy(p);
-			return 0;
-		}
+        virtual int ResumeHandler(EventHandler * p);
 
         virtual int RemoveTimer(TIMER timerId)
         {
@@ -91,11 +82,20 @@ namespace amos
         }
 
     protected:
+        virtual int DestroyHandler(EventHandler * p, EventHandler::Creator * creator)
+        {
+            if (!p) return -1;
+            RemoveHandler(p, EventHandler::ALL_MASK);
+            if (creator)
+                creator->Destroy(p);
+            return 0;
+        }
+
         virtual void HandleEvents(EventHandlerVec & list);
 
         virtual void ProcessOneHandler(EventHandler * handler);
 
-		virtual void PollIOEvents(EventHandlerVec & list);
+        virtual void PollIOEvents(EventHandlerVec & list);
 
     protected:
         ReactorImpl * impl_;

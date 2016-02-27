@@ -33,8 +33,8 @@ namespace amos
 
         virtual int ModifyEvents(HANDLE h, EvMask events);
 
-        virtual int Demultiplex(const EventHandlerMap & handlers,
-                                EventHandlerVec & list,
+        virtual int Demultiplex(EventHandlerMap & handlers,
+                                RegHandlerVec & list,
                                 MSEC timeout);
 
     private:

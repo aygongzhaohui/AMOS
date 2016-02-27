@@ -1,8 +1,8 @@
 /**
  * @file amos_reactor.h
- * @brief	
+ * @brief
  * @author GongZhaohui
- * @version 
+ * @version
  * @date 2016-02-24
  */
 

@@ -94,8 +94,8 @@ int PollReactor::ModifyEvents(HANDLE h, EvMask events)
     return 0;
 }
 
-int PollReactor::Demultiplex(const EventHandlerMap & handlers,
-                        EventHandlerVec & list,
+int PollReactor::Demultiplex(EventHandlerMap & handlers,
+                        RegHandlerVec & list,
                         MSEC timeout)
 {
     if (pollSize_ == 0) return 0;
@@ -106,25 +106,23 @@ int PollReactor::Demultiplex(const EventHandlerMap & handlers,
         {
             struct pollfd & e = pollfds_[0];
             HANDLE h = e.fd;
-            EventHandlerMapCIter iter = handlers.find(h);
+            EventHandlerMapIter iter = handlers.find(h);
             if (iter == handlers.end()) continue;
-            EventHandler * handler = iter->second.handler;
+            RegHandler & rh = iter->second;
+            EventHandler * handler = rh.handler;
             assert(handler);
-            if (!handler)
-            {// TODO log print
-                continue;
-            }
+            if (!handler) continue;
             if ((e.revents & POLLERR) || (e.revents & POLLNVAL)
                     || (e.revents & POLLHUP) || (!(e.revents & POLLIN)))
-                handler->AddREvents(EventHandler::ERROR_MASK);
+                rh.revents |= EventHandler::ERROR_MASK;
             else
             {
                 if (e.revents | POLLIN)
-                    handler->AddREvents(EventHandler::READ_MASK);
+                    rh.revents |= EventHandler::READ_MASK;
                 if (e.revents | POLLOUT)
-                    handler->AddREvents(EventHandler::WRITE_MASK);
+                    rh.revents |= EventHandler::WRITE_MASK;
             }
-            list.push_back(handler);
+            list.push_back(&rh);
         }
     }
     return 0;

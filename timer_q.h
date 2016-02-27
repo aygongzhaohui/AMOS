@@ -20,18 +20,24 @@ namespace amos
     class TimerQ
     {
     private:
+        struct TimerWrapper
+        {
+            Timer timer;
+            RegHandler * reg_handler;
+        };
+
         struct TimerCompare
         {
-            bool operator()(const Timer * t1, const Timer * t2)
+            bool operator()(const TimerWrapper * t1, const TimerWrapper * t2)
             {
-                return *t1 < *t2;
+                return t1->timer < t2->timer;
             }
         };
 
     private:
-        typedef std::set<Timer*, TimerCompare> TimerSet;
+        typedef std::set<TimerWrapper*, TimerCompare> TimerSet;
         typedef TimerSet::iterator TimerSetIter;
-        typedef std::map<TIMER, Timer> TimerMap;
+        typedef std::map<TIMER, TimerWrapper> TimerMap;
         typedef TimerMap::iterator TimerMapIter;
         typedef TimerMap::const_iterator TimerMapConstIter;
 
@@ -54,16 +60,18 @@ namespace amos
          * @return    > 0 timer id
          *          0 failed
          */
-        TIMER RegisterTimer(EventHandler * handler, MSEC delay);
+        TIMER RegisterTimer(RegHandler * rh, MSEC delay);
 
-        TIMER RegisterTimer(TIMER id, EventHandler * handler, MSEC delay);
+        TIMER RegisterTimer(TIMER id, RegHandler * rh, MSEC delay);
 
         int RemoveTimer(TIMER id)
         {
             if (id == INVALID_TIMER) return -1;
             TimerMapIter iter = timers_.find(id);
             if (iter == timers_.end()) return -1;
-            tq_.erase(&(iter->second));
+            RegHandler * rh = iter->second.reg_handler;
+            rh->timers.erase(id);
+            if (rh) tq_.erase(&(iter->second));
             timers_.erase(iter);
             return 0;
         }
@@ -73,7 +81,9 @@ namespace amos
             if (id == INVALID_TIMER) return NULL;
             TimerMapConstIter iter = timers_.find(id);
             if (iter == timers_.end()) return NULL;
-            return iter->second.Handler();
+            RegHandler * rh = iter->second.reg_handler;
+            if (rh) return rh->handler;
+            return NULL;
         }
 
         /**
@@ -88,11 +98,11 @@ namespace amos
             TimerMapIter iter = timers_.find(id);
             assert(iter != timers_.end());
             if (iter == timers_.end()) return -1;
-            Timer & t = iter->second;
-            if (tq_.find(&t) != tq_.end())
+            Timer & t = iter->second.timer;
+            if (tq_.find(&iter->second) != tq_.end())
             {
                 t.Reset();
-                tq_.insert(&t);
+                tq_.insert(&iter->second);
             }
             return 0;
         }
@@ -104,14 +114,17 @@ namespace amos
          *
          * @return    The remained time for next timer timeout
          */
-        MSEC Schedule(EventHandlerVec & list);
+        MSEC Schedule(RegHandlerVec & list);
 
-		MSEC GetTimeout() const
-		{
-			if (tq_.size() == 0)
-				return MAX_INTTYPE_VAL(MSEC);
-			return (*tq_.begin())->CheckTO();
-		}
+        MSEC GetTimeout() const
+        {
+            if (tq_.size() == 0)
+                return MAX_INTTYPE_VAL(MSEC);
+            TimerWrapper * t = *tq_.begin();
+            if (t)
+                return (t->timer).CheckTO();
+            return MAX_INTTYPE_VAL(MSEC);
+        }
 
     private:
         TimerMap timers_;

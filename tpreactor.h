@@ -26,7 +26,6 @@ namespace amos
 
 	private:
 		sem_t semaphore_;
-		EventHandlerVec pending_;
 		unsigned pos_;
 	};
 

@@ -91,14 +91,6 @@ namespace amos
         virtual void RunEventLoop();
 
     protected:
-        virtual int DestroyHandler(EventHandler * p, EventHandler::Creator * creator)
-        {
-            if (!p) return -1;
-            ScopeLock lock(mqlock_);
-            mq_.push_back(ReactorMsg(RMSG_DESTROY, p, creator));
-            return 0;
-        }
-
         virtual void ProcessMqMsg();
 
     protected:

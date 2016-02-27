@@ -81,15 +81,6 @@ namespace amos
 
         virtual void RunEventLoop();
 
-    protected:
-        virtual int DestroyHandler(EventHandler * p, EventHandler::Creator * creator)
-        {
-            if (IsReactorThread())
-                return Reactor::DestroyHandler(p, creator);
-            else
-                return MQReactor::DestroyHandler(p, creator);
-        }
-
     private:
         TID thrdId_;
     };

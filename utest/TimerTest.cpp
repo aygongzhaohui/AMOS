@@ -24,10 +24,10 @@ TEST(TimerTest, Timeout_10ms_sleep11ms)
     ASSERT_TRUE(t.CheckTO() < 0);
 }
 
-TEST(TimerTest, NotTimeout_10ms_sleep9ms)
+TEST(TimerTest, NotTimeout_10ms_sleep7ms)
 {
     amos::Timer t(1, 10);
-    poll(NULL, 0, 9);
+    poll(NULL, 0, 7);
     ASSERT_TRUE(t.CheckTO() >= 0);
 }
 
@@ -60,9 +60,7 @@ TEST(TimerTest, TimerCompare)
 
 TEST(TimerTest, TimerHanlderId)
 {
-	amos::EventHandler * p = new amos::EventHandler;
-    amos::Timer t(199, 100, p);
-    ASSERT_TRUE(t.Handler() == p);
+    amos::Timer t(199, 100);
     ASSERT_TRUE(t.Id() == 199);
 }
 

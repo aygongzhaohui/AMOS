@@ -10,16 +10,31 @@
 #define _BASE_HANDLER_H_
 
 #include "basedef.h"
+#include "refcounterT.h"
 #include <map>
 
 namespace amos
 {
 
     class Reactor;
-    class EventHandler
+    class EventHandler;
+    class EventHandlerCreator
     {
     public:
-		friend class Reactor;
+        virtual EventHandler * Create()
+        {
+            return NULL;
+        }
+
+        virtual void Delete(EventHandler * handler)
+        {
+        }
+    };
+
+    class EventHandler : public RefCounter<EventHandler, EventHandlerCreator>
+    {
+    public:
+        friend class Reactor;
         enum
         {
             READ_MASK = (1 << 0),
@@ -29,18 +44,13 @@ namespace amos
             ALL_MASK = (~0U)
         };
 
-        class Creator
+        typedef enum enState
         {
-        public:
-            virtual EventHandler * Create()
-            {
-                return NULL;
-            }
-
-            virtual void Destroy(EventHandler * handler)
-            {
-            }
-        };
+            NORMAL_STAT = 0,
+            REMOMVED_STAT = 1,
+            CLOSED_STAT = 2,
+            SUSPEND_STAT = 3,
+        } State;
 
     public:
         EventHandler() : reactor_(NULL), suspend_(false)
@@ -88,47 +98,47 @@ namespace amos
             return reactor_;
         }
 
-		bool IsSuspend() const
-		{
-			return suspend_;
-		}
+        bool IsSuspend() const
+        {
+            return suspend_;
+        }
 
         EvMask REvents() const
         {
             return rEvents_;
         }
 
-		/**
-		 * @brief	add the occured events
-		 *          Warning:不应该暴露该接口, 用户不可以调用
-		 *
-		 * @param	e
-		 */
+        /**
+         * @brief    add the occured events
+         *          Warning:不应该暴露该接口, 用户不可以调用
+         *
+         * @param    e
+         */
         void AddREvents(EvMask e)
         {
             rEvents_ |= e;
         }
 
-	protected:
-		EvMask Events() const
-		{
-			return regEvents_;
-		}
+    protected:
+        EvMask Events() const
+        {
+            return regEvents_;
+        }
 
-		void SetEvents(const EvMask mask)
-		{
-			regEvents_ = mask;
-		}
+        void SetEvents(const EvMask mask)
+        {
+            regEvents_ = mask;
+        }
 
-		void Suspend()
-		{
-			suspend_ = true;
-		}
+        void Suspend()
+        {
+            suspend_ = true;
+        }
 
-		void Resume()
-		{
-			suspend_ = false;
-		}
+        void Resume()
+        {
+            suspend_ = false;
+        }
 
         void FetchREvents(EvMask & r, TimerVec & tl)
         {
@@ -137,77 +147,82 @@ namespace amos
             tl.swap(toList_);
         }
 
-		/**
-		 * @brief	Add timeout timer to toList
-		 *
-		 * @param	t
-		 */
+        /**
+         * @brief    Add timeout timer to toList
+         *
+         * @param    t
+         */
         void SetTimeout(TIMER t)
         {
-			if (timerSet_.find(t) != timerSet_.end())
-				toList_.push_back(t);
+            if (timerSet_.find(t) != timerSet_.end())
+                toList_.push_back(t);
         }
 
-		/**
-		 * @brief	Add the time to timer set
-		 *
-		 * @param	t
-		 */
+        /**
+         * @brief    Add the time to timer set
+         *
+         * @param    t
+         */
         void SetTimer(TIMER t)
         {
             timerSet_.insert(t);
         }
 
-		/**
-		 * @brief	Remove timer from timer set
-		 *
-		 * @param	t
-		 */
+        /**
+         * @brief    Remove timer from timer set
+         *
+         * @param    t
+         */
         void RMTimer(TIMER t)
         {
             timerSet_.erase(t);
         }
 
-		/**
-		 * @brief	Clear the timer set
-		 *
-		 * @param	s  return all timers cleared
-		 *
-		 */
-		void ClearTimers(TimerSet & s)
-		{
-			s.swap(timerSet_);
-			timerSet_.clear();
-		}
+        /**
+         * @brief    Clear the timer set
+         *
+         * @param    s  return all timers cleared
+         *
+         */
+        void ClearTimers(TimerSet & s)
+        {
+            s.swap(timerSet_);
+            timerSet_.clear();
+        }
 
     private:
-		EvMask regEvents_;    // events registered
+        EvMask regEvents_;    // events registered
         EvMask rEvents_;      // record pending events(I/O Timer events)
         Reactor * reactor_;   // reactor attach to
         TimerSet timerSet_;   // all timers attach on the handler
         TimerVec toList_;     // timeout timer list
-		bool suspend_;
+        bool suspend_;
     };
 
     struct RegHandler
     {
-        RegHandler() : handler(NULL), creator(NULL)
-        {
-        }
-        RegHandler(EventHandler * h,
-                EventHandler::Creator * c = NULL) : handler(h), creator(c)
+        RegHandler() :
+            handler(NULL),
+            state(EventHandler::NORMAL_STAT),
+            events(0), revents(0)
         {
         }
         EventHandler * handler;
-        EventHandler::Creator * creator;
+        EventHandler::State state;
+        EvMask events;
+        EvMask revents;
+        TimerSet timers;
+        TimerVec timeout_list;
     };
-    typedef EventHandler::Creator EventHandlerCreator;
     typedef std::map<HANDLE, RegHandler> EventHandlerMap;
     typedef EventHandlerMap::iterator EventHandlerMapIter;
     typedef EventHandlerMap::const_iterator EventHandlerMapCIter;
 
     typedef std::vector<EventHandler *> EventHandlerVec;
     typedef EventHandlerVec::iterator EventHandlerVecIter;
+
+    typedef std::vector<RegHandler*> RegHandlerVec;
+    typedef RegHandlerVec::iterator RegHandlerVecIter;
 
 }
 

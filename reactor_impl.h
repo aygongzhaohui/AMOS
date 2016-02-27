@@ -33,8 +33,8 @@ namespace amos
             return -1;
         }
 
-        virtual int Demultiplex(const EventHandlerMap & map,
-                                EventHandlerVec & list,
+        virtual int Demultiplex(EventHandlerMap & map,
+                                RegHandlerVec & list,
                                 MSEC timeout)
         {
             return -1;

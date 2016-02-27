@@ -33,27 +33,32 @@ namespace amos
                 EventHandler *h, void * p = NULL)
             : mtype(t), handler(h)
         {
+			if (handler) handle = handler->Handle(); 
             arg0.ptr = p; arg1.val = 0;
         }
         ReactorMsg(ReactorMsgType t,
                 EventHandler *h, long v)
             : mtype(t), handler(h)
         {
+			if (handler) handle = handler->Handle(); 
             arg0.val = v; arg1.val = 0;
         }
         ReactorMsg(ReactorMsgType t,
                 EventHandler *h, long v0, void * p1)
             : mtype(t), handler(h)
         {
+			if (handler) handle = handler->Handle(); 
             arg0.val = v0; arg1.ptr = p1;
         }
         ReactorMsg(ReactorMsgType t,
                 EventHandler *h, long v0, long v1)
             : mtype(t), handler(h)
         {
+			if (handler) handle = handler->Handle(); 
             arg0.val = v0; arg1.val = v1;
         }
         ReactorMsgType mtype;
+		HANDLE handle;
         EventHandler *handler;
         union { long val; void *ptr; } arg0;
         union { long val; void *ptr; } arg1;

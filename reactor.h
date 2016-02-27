@@ -56,14 +56,7 @@ namespace amos
 
         virtual int ResumeHandler(EventHandler * p);
 
-        virtual int RemoveTimer(TIMER timerId)
-        {
-            if (loop_)
-            {
-                return timerQ_.RemoveTimer(timerId);
-            }
-            return -1;
-        }
+        virtual int RemoveTimer(TIMER timerId);
 
         virtual int ResetTimer(TIMER timerId)
         {
@@ -82,25 +75,17 @@ namespace amos
         }
 
     protected:
-        virtual int DestroyHandler(EventHandler * p, EventHandler::Creator * creator)
-        {
-            if (!p) return -1;
-            RemoveHandler(p, EventHandler::ALL_MASK);
-            if (creator)
-                creator->Destroy(p);
-            return 0;
-        }
+        virtual void HandleEvents(RegHandlerVec & list);
 
-        virtual void HandleEvents(EventHandlerVec & list);
+        virtual void ProcessOneHandler(RegHandler & rh);
 
-        virtual void ProcessOneHandler(EventHandler * handler);
-
-        virtual void PollIOEvents(EventHandlerVec & list);
+        virtual void PollIOEvents(RegHandlerVec & list);
 
     protected:
         ReactorImpl * impl_;
         EventHandlerMap handlerMap_;
         TimerQ timerQ_;
+        RegHandlerVec evList_;
         bool loop_;
     };
 

@@ -17,8 +17,11 @@ namespace amos
     class Timer
     {
     public:
-        Timer(TIMER timerId, MSEC d, EventHandler *h = NULL)
-            : id_(timerId), delay_(d), handler_(h)
+        Timer() : id_(0), delay_(0)
+        {
+        }
+        Timer(TIMER timerId, MSEC d)
+            : id_(timerId), delay_(d)
         {
             TimeNow(startTime_);
         }
@@ -50,13 +53,8 @@ namespace amos
 
         bool operator<(const Timer & t) const
         {
-			MSEC diff = TimeDiff(startTime_, t.startTime_);
+            MSEC diff = TimeDiff(startTime_, t.startTime_);
             return ((delay_ - t.delay_) < diff);
-        }
-
-        EventHandler * Handler() const
-        {
-            return handler_;
         }
 
         TIMER Id() const
@@ -67,7 +65,6 @@ namespace amos
     private:
         TIMER id_;
         MSEC delay_;
-        EventHandler * handler_;
         TIMESTAMP startTime_;
     };
 

@@ -22,14 +22,21 @@ void MQReactor::ProcessMqMsg()
     while (i < tmq.size())
     {
         ReactorMsg &msg = tmq[i];
+        HANDLE h = msg.handle;
+        EventHandler * handler = msg.handler;
+        // avoid invalid handler ptr
+        EventHandlerMapIter iter = handlerMap_.find(h);
+        if ((iter != handlerMap_.end()) &&
+                (iter->second.handler == handler))
+        {
+            continue;
+        }
         switch (msg.mtype)
         {
         case RMSG_REGHANDLER:
             {
-                EventHandler * handler = msg.handler;
                 EvMask mask = (EvMask)msg.arg0.val;
-                EventHandlerCreator * creator =
-                    (EventHandlerCreator*)msg.arg1.ptr;
+                EventHandlerCreator * creator = (EventHandlerCreator*)msg.arg1.ptr;
                 if (Reactor::RegisterHandler(handler, mask, creator))
                 {// TODO log print
                 }
@@ -37,7 +44,6 @@ void MQReactor::ProcessMqMsg()
             break;
         case RMSG_RMHANDLER:
             {
-                EventHandler * handler = msg.handler;
                 EvMask mask = (EvMask)msg.arg0.val;
                 if (Reactor::RemoveHandler(handler, mask))
                 {// TODO log print
@@ -45,33 +51,18 @@ void MQReactor::ProcessMqMsg()
             }
             break;
         case RMSG_SUSPEND:
-            {
-                EventHandler * handler = msg.handler;
-                Reactor::SuspendHandler(handler);
-            }
+            Reactor::SuspendHandler(handler);
             break;
         case RMSG_RESUME:
-            {
-                EventHandler * handler = msg.handler;
-                Reactor::ResumeHandler(handler);
-            }
-            break;
-        case RMSG_DESTROY:
-            {
-                EventHandler * handler = msg.handler;
-                EventHandlerCreator * creator =
-                    (EventHandlerCreator*)msg.arg1.ptr;
-                Reactor::DestroyHandler(handler, creator);
-            }
+            Reactor::ResumeHandler(handler);
             break;
         case RMSG_REGTIMER:
             {
-                EventHandler * handler = msg.handler;
                 TIMER id = (TIMER)msg.arg0.val;
                 MSEC delay = (MSEC)msg.arg1.val;
-                if (Reactor::RegisterTimer(handler, delay, id))
-                {// TODO log print
-                }
+				if (Reactor::RegisterTimer(handler, delay, id))
+				{// TODO log print
+				}
             }
             break;
         case RMSG_RMTIMER:
@@ -93,16 +84,14 @@ void MQReactor::RunEventLoop()
 {
     while (loop_)
     {
-        EventHandlerVec ehList;
         //1. process all msgs in mq
         ProcessMqMsg();
         //2.poll I/O events
-        PollIOEvents(ehList);
+        PollIOEvents(evList_);
         //3.poll timer events
-        timerQ_.Schedule(ehList);
+        timerQ_.Schedule(evList_);
         //4.handle all events
-        if (ehList.size() > 0)
-            HandleEvents(ehList);
+        HandleEvents(evList_);
     }
 }
 

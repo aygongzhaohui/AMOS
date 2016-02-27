@@ -84,8 +84,8 @@ int EPollReactor::ModifyEvents(HANDLE h, EvMask events)
     return 0;
 }
 
-int EPollReactor::Demultiplex(const EventHandlerMap & handlers,
-                        EventHandlerVec & list,
+int EPollReactor::Demultiplex(EventHandlerMap & handlers,
+                        RegHandlerVec & list,
                         MSEC timeout)
 {
     struct epoll_event revents[MAX_EPOLL_REVENTS];
@@ -96,23 +96,21 @@ int EPollReactor::Demultiplex(const EventHandlerMap & handlers,
         {
             struct epoll_event & e = revents[i];
             HANDLE h = e.data.fd;
-            EventHandlerMapCIter iter = handlers.find(h);
+            EventHandlerMapIter iter = handlers.find(h);
             if (iter == handlers.end()) continue;
-            EventHandler * handler = iter->second.handler;
-            assert(handler);
+            RegHandler & rh = iter->second;
+            EventHandler * handler = rh.handler;
             if (!handler) continue;
             if ((e.events & EPOLLERR) || (e.events & EPOLLHUP) || (!(e.events & EPOLLIN)))
-            {
-                handler->AddREvents(EventHandler::ERROR_MASK);
-            }
+                rh.revents |= EventHandler::ERROR_MASK;
             else
             {
                 if (e.events | EPOLLIN)
-                    handler->AddREvents(EventHandler::READ_MASK);
+                    rh.revents |= EventHandler::READ_MASK;
                 if (e.events | EPOLLOUT)
-                    handler->AddREvents(EventHandler::WRITE_MASK);
+                    rh.revents |= EventHandler::WRITE_MASK;
             }
-            list.push_back(handler);
+            list.push_back(&rh);
         }
     }
     return ret;

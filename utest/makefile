@@ -2,12 +2,14 @@ CXX = g++
 AR = ar
 
 INCLUDES = -I../ -I./
+TSTDIR = ../
 TARGETS = AmosUnitTest
-OBJS = TimerTest.o main.o
+TSTOBJS = $(TSTDIR)timer_q.o $(TSTDIR)basedef.o
+OBJS = TimerTest.o TimerQTest.o main.o
 LIBS = gtest.a
 LDFLAGS = -lrt -lpthread
 
-CXXFLAGS = -Wall $(INCLUDES)
+CXXFLAGS = -g -Wall $(INCLUDES)
 #编译可执行程序
 EXETARGETS = $(CXX) $(CXXFLAGS) $^ -o $@ $(LIBS) $(LDFLAGS)
 #编译静态库文件
@@ -22,7 +24,7 @@ MAKETARGETS = $(EXETARGETS)
 
 all : $(TARGETS)
 
-$(TARGETS) : $(OBJS)
+$(TARGETS) : $(TSTOBJS) $(OBJS)
 	$(MAKETARGETS)
 
 #生成依赖文件，头文件修改时重新编译依赖源文件

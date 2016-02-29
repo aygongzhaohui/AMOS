@@ -21,6 +21,7 @@ TIMER TimerQ::AllocTimerId()
 
 TIMER TimerQ::RegisterTimer(RegHandler * rh, MSEC delay)
 {
+    if (delay <= 0 || !rh) return INVALID_TIMER;
     return RegisterTimer(AllocTimerId(), rh, delay);
 }
 

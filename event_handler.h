@@ -53,7 +53,7 @@ namespace amos
         } State;
 
     public:
-        EventHandler() : reactor_(NULL), suspend_(false)
+        EventHandler() : reactor_(NULL)
         {
         }
         virtual ~EventHandler()
@@ -98,107 +98,15 @@ namespace amos
             return reactor_;
         }
 
-        bool IsSuspend() const
-        {
-            return suspend_;
-        }
-
-        EvMask REvents() const
-        {
-            return rEvents_;
-        }
-
-        /**
-         * @brief    add the occured events
-         *          Warning:不应该暴露该接口, 用户不可以调用
-         *
-         * @param    e
-         */
-        void AddREvents(EvMask e)
-        {
-            rEvents_ |= e;
-        }
-
-    protected:
-        EvMask Events() const
-        {
-            return regEvents_;
-        }
-
-        void SetEvents(const EvMask mask)
-        {
-            regEvents_ = mask;
-        }
-
-        void Suspend()
-        {
-            suspend_ = true;
-        }
-
-        void Resume()
-        {
-            suspend_ = false;
-        }
-
-        void FetchREvents(EvMask & r, TimerVec & tl)
-        {
-            tl.clear();
-            r = rEvents_; rEvents_ = 0;
-            tl.swap(toList_);
-        }
-
-        /**
-         * @brief    Add timeout timer to toList
-         *
-         * @param    t
-         */
-        void SetTimeout(TIMER t)
-        {
-            if (timerSet_.find(t) != timerSet_.end())
-                toList_.push_back(t);
-        }
-
-        /**
-         * @brief    Add the time to timer set
-         *
-         * @param    t
-         */
-        void SetTimer(TIMER t)
-        {
-            timerSet_.insert(t);
-        }
-
-        /**
-         * @brief    Remove timer from timer set
-         *
-         * @param    t
-         */
-        void RMTimer(TIMER t)
-        {
-            timerSet_.erase(t);
-        }
-
-        /**
-         * @brief    Clear the timer set
-         *
-         * @param    s  return all timers cleared
-         *
-         */
-        void ClearTimers(TimerSet & s)
-        {
-            s.swap(timerSet_);
-            timerSet_.clear();
-        }
-
     private:
-        EvMask regEvents_;    // events registered
-        EvMask rEvents_;      // record pending events(I/O Timer events)
         Reactor * reactor_;   // reactor attach to
-        TimerSet timerSet_;   // all timers attach on the handler
-        TimerVec toList_;     // timeout timer list
-        bool suspend_;
     };
 
+	/**
+	 * @brief handler/handle pair which is interact between
+	 *        Reactor and ReactorImpl
+	 *     
+	 */
     struct RegHandler
     {
         RegHandler() :

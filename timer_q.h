@@ -99,7 +99,7 @@ namespace amos
             assert(iter != timers_.end());
             if (iter == timers_.end()) return -1;
             Timer & t = iter->second.timer;
-            if (tq_.find(&iter->second) != tq_.end())
+            if (tq_.find(&iter->second) == tq_.end())
             {
                 t.Reset();
                 tq_.insert(&iter->second);

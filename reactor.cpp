@@ -134,7 +134,7 @@ int Reactor::RegisterHandler(EventHandler * p,
     {// TODO log
         return -1;
     }
-    EvMask reg = (mask ^ p->Events()) & mask;
+    EvMask reg = (mask ^ rh.events) & mask;
     if (reg > 0)
     {
         rh.events |= mask;

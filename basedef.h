@@ -1,6 +1,6 @@
 /**
  * @file basedef.h
- * @brief   
+ * @brief
  * @author GongZhaohui
  * @version
  * @date 2016-02-18
@@ -42,15 +42,9 @@ namespace amos
      *
      * @return    calculate (t2 - t1) in millisec
      */
-    MSEC TimeDiff(const TIMESTAMP & t1, const TIMESTAMP t2)
-    {
-        return ((t2.tv_sec - t1.tv_sec) * 1000 + (t2.tv_nsec - t1.tv_nsec)/1000000);
-    }
+    MSEC TimeDiff(const TIMESTAMP & t1, const TIMESTAMP t2);
 
-    void TimeNow(TIMESTAMP & t)
-    {
-        clock_gettime(CLOCK_MONOTONIC, &t);
-    }
+    void TimeNow(TIMESTAMP & t);
 
     /**
      * @brief    diff time between now
@@ -61,20 +55,7 @@ namespace amos
      * @return    milliseconds elapse
      *          exception return -1
      */
-    MSEC TimeDiffNow(const TIMESTAMP & past)
-    {
-        TIMESTAMP now;
-		TimeNow(now);
-		/*
-        clock_gettime(CLOCK_MONOTONIC, &now);
-        if (now.tv_sec < past.tv_sec)
-        {// impossible for run 136 years
-            return -1;
-        }
-		*/
-        return TimeDiff(past, now);
-    }
-
+    MSEC TimeDiffNow(const TIMESTAMP & past);
 
 }
 

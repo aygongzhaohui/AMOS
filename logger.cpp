@@ -3,9 +3,9 @@
 #include "thread_mutex.h"
 
 
-namespace base
+namespace amos 
 {
-    amos::ThreadMutex log_lock;
+    ThreadMutex log_lock;
     void log_print(char * pre, char * msg)
     {
         log_lock.Lock();

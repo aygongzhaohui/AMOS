@@ -118,7 +118,10 @@ int Reactor::RegisterHandler(EventHandler * p,
     EventHandlerMapIter iter = handlerMap_.find(p->Handle());
     if (iter == handlerMap_.end())
     {
-        if (impl_->RegisterHandle(p->Handle(), mask) == 0)
+		int ret = 0;
+		if ((mask & EventHandler::NOIO_MASK) == 0)
+			ret = impl_->RegisterHandle(p->Handle(), mask);
+        if (!ret)
         {
             RegHandler& rh = handlerMap_[p->Handle()];
             rh.events = mask;
@@ -134,6 +137,8 @@ int Reactor::RegisterHandler(EventHandler * p,
     {// TODO log
         return -1;
     }
+	// has NOIO_MASK then couldn't modify I/O events
+	if (rh.events & EventHandler::NOIO_MASK) return -1;
     EvMask reg = (mask ^ rh.events) & mask;
     if (reg > 0)
     {
@@ -223,6 +228,7 @@ TIMER Reactor::RegisterTimer(EventHandler * p, MSEC delay, TIMER id)
     assert(p);
     if (!p) return TimerQ::INVALID_TIMER;
     EventHandlerMapIter iter = handlerMap_.find(p->Handle());
+	if (iter == handlerMap_.end()) return TimerQ::INVALID_TIMER;
     RegHandler & rh = iter->second;
     if (rh.handler != p)
     {// TODO log

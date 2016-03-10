@@ -43,7 +43,7 @@ int EPollReactor::RegisterHandle(HANDLE h, EvMask events)
 {
     if (h == INVALID_HANDLE) return -1;
     unsigned tevents = 0;
-    tevents = EPOLLERR | EPOLLHUP;
+	tevents = EPOLLERR | EPOLLHUP;
     if (events | EventHandler::READ_MASK) tevents |= EPOLLIN;
     if (events | EventHandler::WRITE_MASK) tevents |= EPOLLOUT;
     struct epoll_event e; e.events = tevents; e.data.fd = h;

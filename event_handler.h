@@ -37,10 +37,12 @@ namespace amos
         friend class Reactor;
         enum
         {
+			NONE_MASK = 0,
             READ_MASK = (1 << 0),
             WRITE_MASK = (1 << 1),
             TIMER_MASK = (1 << 5),
             ERROR_MASK = (1 << 7),
+			NOIO_MASK = (1 << 8),
             ALL_MASK = (~0U)
         };
 

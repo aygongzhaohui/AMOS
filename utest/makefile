@@ -4,10 +4,10 @@ AR = ar
 INCLUDES = -I../ -I./
 TSTDIR = ../
 TARGETS = AmosUnitTest
-TSTOBJS = $(TSTDIR)timer_q.o $(TSTDIR)basedef.o
-OBJS = TimerTest.o TimerQTest.o main.o
+TSTOBJS = $(TSTDIR)timer_q.o $(TSTDIR)basedef.o $(TSTDIR)reactor_epoll.o $(TSTDIR)reactor_poll.o 
+OBJS = TimerTest.o TimerQTest.o demultiplex_stub.o ReactorImplTest.o main.o
 LIBS = gtest.a
-LDFLAGS = -lrt -lpthread
+LDFLAGS = -lrt
 
 CXXFLAGS = -g -Wall $(INCLUDES)
 #编译可执行程序
@@ -49,5 +49,5 @@ sinclude $(OBJS:.o=.d)
 	$(CXX) $(CXXFLAGS) -c $< -o $@
 
 clean:
-	rm -rf $(OBJS) $(TARGETS) *.d* *.o
+	rm -rf $(OBJS) $(TARGETS) *.d* *.o $(TSTDIR)*.o
 

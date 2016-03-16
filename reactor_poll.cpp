@@ -9,10 +9,10 @@
 
 #include "reactor_poll.h"
 #include "event_handler.h"
+#include "demultiplex.h"
 #include <string>
 #include <stdio.h>
 #include <unistd.h>
-#include <sys/poll.h>
 #include <assert.h>
 
 using namespace amos;
@@ -28,8 +28,8 @@ int PollReactor::RegisterHandle(HANDLE h, EvMask events)
     struct pollfd d;
     d.fd = h;
     d.events = POLLHUP | POLLERR | POLLNVAL;
-    if (events | EventHandler::READ_MASK) d.events |= POLLIN;
-    if (events | EventHandler::WRITE_MASK) d.events |= POLLOUT;
+    if (events & EventHandler::READ_MASK) d.events |= POLLIN;
+    if (events & EventHandler::WRITE_MASK) d.events |= POLLOUT;
     d.revents = 0;
     pollfds_.push_back(d);
     unsigned index = pollSize_;
@@ -88,8 +88,8 @@ int PollReactor::ModifyEvents(HANDLE h, EvMask events)
     if (iter == handleIndexMap_.end()) return -1;
     unsigned index = iter->second;
     unsigned tevents = 0;
-    if (events | EventHandler::READ_MASK) tevents |= POLLIN;
-    if (events | EventHandler::WRITE_MASK) tevents |= POLLOUT;
+    if (events & EventHandler::READ_MASK) tevents |= POLLIN;
+    if (events & EventHandler::WRITE_MASK) tevents |= POLLOUT;
     pollfds_[index].events = tevents;
     return 0;
 }
@@ -99,7 +99,7 @@ int PollReactor::Demultiplex(EventHandlerMap & handlers,
                         MSEC timeout)
 {
     if (pollSize_ == 0) return 0;
-    int ret = poll(&pollfds_[0], pollSize_, timeout);
+    int ret = Poll::poll(&pollfds_[0], pollSize_, timeout);
     if (ret > 0)
     {
         for (int i = 0; i < ret; ++i)
@@ -112,14 +112,13 @@ int PollReactor::Demultiplex(EventHandlerMap & handlers,
             EventHandler * handler = rh.handler;
             assert(handler);
             if (!handler) continue;
-            if ((e.revents & POLLERR) || (e.revents & POLLNVAL)
-                    || (e.revents & POLLHUP) || (!(e.revents & POLLIN)))
+            if ((e.revents & POLLERR) || (e.revents & POLLNVAL) || (e.revents & POLLHUP))
                 rh.revents |= EventHandler::ERROR_MASK;
             else
             {
-                if (e.revents | POLLIN)
+                if (e.revents & POLLIN)
                     rh.revents |= EventHandler::READ_MASK;
-                if (e.revents | POLLOUT)
+                if (e.revents & POLLOUT)
                     rh.revents |= EventHandler::WRITE_MASK;
             }
             list.push_back(&rh);

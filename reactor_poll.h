@@ -7,6 +7,7 @@
  */
 
 #include "reactor_impl.h"
+#include "demultiplex.h"
 #include <vector>
 #include <map>
 

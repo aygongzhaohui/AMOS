@@ -26,57 +26,99 @@ namespace amos
                 EvMask mask, EventHandlerCreator * creator = NULL)
         {
             if (IsReactorThread())
+			{
+				LOG_DEBUG("RegisterHandler run in reactor thread");
                 return Reactor::RegisterHandler(p, mask, creator);
+			}
             else
+			{
+				LOG_DEBUG("RegisterHandler run in other thread");
                 return MQReactor::RegisterHandler(p, mask, creator);
+			}
         }
 
         virtual int RemoveHandler(EventHandler * p, EvMask mask)
         {
             if (IsReactorThread())
+			{
+				LOG_DEBUG("RemoveHandler run in reactor thread");
                 return Reactor::RemoveHandler(p, mask);
+			}
             else
+			{
+				LOG_DEBUG("RemoveHandler run in other thread");
                 return MQReactor::RemoveHandler(p, mask);
+			}
         }
 
         virtual int SuspendHandler(EventHandler * p)
         {
             if (IsReactorThread())
+			{
+				LOG_DEBUG("SuspendHandler run in reactor thread");
                 return Reactor::SuspendHandler(p);
+			}
             else
+			{
+				LOG_DEBUG("SuspendHandler run in other thread");
                 return MQReactor::SuspendHandler(p);
+			}
         }
 
         virtual int ResumeHandler(EventHandler * p)
         {
             if (IsReactorThread())
+			{
+				LOG_DEBUG("ResumeHandler run in reactor thread");
                 return Reactor::ResumeHandler(p);
+			}
             else
+			{
+				LOG_DEBUG("ResumeHandler run in other thread");
                 return MQReactor::ResumeHandler(p);
+			}
         }
 
         virtual TIMER RegisterTimer(EventHandler * p, MSEC delay)
         {
             if (IsReactorThread())
+			{
+				LOG_DEBUG("RegisterTimer run in reactor thread");
                 return Reactor::RegisterTimer(p, delay);
+			}
             else
+			{
+				LOG_DEBUG("RegisterTimer run in other thread");
                 return MQReactor::RegisterTimer(p, delay);
+			}
         }
 
         virtual int RemoveTimer(TIMER timerId)
         {
             if (IsReactorThread())
+			{
+				LOG_DEBUG("RemoveTimer run in reactor thread");
                 return Reactor::RemoveTimer(timerId);
+			}
             else
+			{
+				LOG_DEBUG("RemoveTimer run in other thread");
                 return MQReactor::RemoveTimer(timerId);
+			}
         }
 
         virtual int ResetTimer(TIMER timerId)
         {
             if (IsReactorThread())
+			{
+				LOG_DEBUG("ResetTimer run in reactor thread");
                 return Reactor::ResetTimer(timerId);
+			}
             else
+			{
+				LOG_DEBUG("ResetTimer run in other thread");
                 return MQReactor::ResetTimer(timerId);
+			}
         }
 
         virtual void RunEventLoop();

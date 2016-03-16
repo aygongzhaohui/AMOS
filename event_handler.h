@@ -37,12 +37,12 @@ namespace amos
         friend class Reactor;
         enum
         {
-			NONE_MASK = 0,
+            NONE_MASK = 0,
             READ_MASK = (1 << 0),
             WRITE_MASK = (1 << 1),
             TIMER_MASK = (1 << 5),
             ERROR_MASK = (1 << 7),
-			NOIO_MASK = (1 << 8),
+            NOIO_MASK = (1 << 8),
             ALL_MASK = (~0U)
         };
 
@@ -94,6 +94,10 @@ namespace amos
             return INVALID_HANDLE;
         }
 
+        virtual void SetHandle(const HANDLE h)
+        {
+        }
+
         Reactor * reactor(Reactor * p = NULL)
         {
             reactor_ = p;
@@ -104,11 +108,11 @@ namespace amos
         Reactor * reactor_;   // reactor attach to
     };
 
-	/**
-	 * @brief handler/handle pair which is interact between
-	 *        Reactor and ReactorImpl
-	 *     
-	 */
+    /**
+     * @brief handler/handle pair which is interact between
+     *        Reactor and ReactorImpl
+     *     
+     */
     struct RegHandler
     {
         RegHandler() :

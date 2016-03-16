@@ -7,9 +7,12 @@
  */
 
 #include "reactor_impl.h"
+#include "demultiplex.h"
 
 #ifndef _REACTOR_EPOLL_H_
 #define _REACTOR_EPOLL_H_
+
+#define MAX_EPOLL_REVENTS    (1024)
 
 namespace amos
 {
@@ -32,6 +35,7 @@ namespace amos
 
     private:
         int fd_;
+		struct epoll_event revents_[MAX_EPOLL_REVENTS];
     };
 
 

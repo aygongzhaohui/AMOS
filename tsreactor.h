@@ -79,6 +79,21 @@ namespace amos
 			}
         }
 
+        virtual int TriggerHandler(EventHandler * p, EvMask mask)
+        {
+            if (IsReactorThread())
+			{
+				LOG_DEBUG("TriggerHandler run in reactor thread");
+                return Reactor::TriggerHandler(p, mask);
+			}
+            else
+			{
+				LOG_DEBUG("TriggerHandler run in other thread");
+                return MQReactor::TriggerHandler(p, mask);
+			}
+        }
+
+
         virtual TIMER RegisterTimer(EventHandler * p, MSEC delay)
         {
             if (IsReactorThread())

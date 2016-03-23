@@ -43,7 +43,7 @@ namespace amos
             TIMER_MASK = (1 << 5),
             ERROR_MASK = (1 << 7),
             NOIO_MASK = (1 << 8),
-            ALL_MASK = (~0U)
+            ALL_MASK = (READ_MASK | WRITE_MASK | ERROR_MASK | TIMER_MASK)
         };
 
         typedef enum enState
@@ -107,6 +107,19 @@ namespace amos
     private:
         Reactor * reactor_;   // reactor attach to
     };
+
+	class NOIOEventHandler : public EventHandler
+	{
+	public:
+		NOIOEventHandler() : fd_(INVALID_HANDLE)
+		{
+		}
+
+        virtual int Open(HANDLE h = INVALID_HANDLE);
+
+	private:
+		HANDLE fd_;
+	};
 
     /**
      * @brief handler/handle pair which is interact between

@@ -56,6 +56,8 @@ namespace amos
 
         virtual int ResumeHandler(EventHandler * p);
 
+        virtual int TriggerHandler(EventHandler * p, EvMask mask);
+
         virtual int RemoveTimer(TIMER timerId);
 
         virtual int ResetTimer(TIMER timerId)

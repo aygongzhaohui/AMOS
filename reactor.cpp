@@ -19,9 +19,15 @@ Reactor::Reactor(ReactorImpl * impl)
 
 void Reactor::PollIOEvents(RegHandlerVec & list)
 {
-    MSEC nextTimeout = timerQ_.GetTimeout();
-    if (nextTimeout > DEFAULT_REACT_INTERVAL)
-        nextTimeout = DEFAULT_REACT_INTERVAL;
+    MSEC nextTimeout = 0;
+	// if there are pending events, it will poll without
+	// waiting for timeout
+	if (list.size() == 0)
+	{
+		nextTimeout = timerQ_.GetTimeout();
+		if (nextTimeout > DEFAULT_REACT_INTERVAL)
+			nextTimeout = DEFAULT_REACT_INTERVAL;
+	}
     impl_->Demultiplex(handlerMap_, list, nextTimeout);
 }
 
@@ -95,17 +101,18 @@ void Reactor::ProcessOneHandler(RegHandler & rh)
     }
 }
 
-void Reactor::HandleEvents(RegHandlerVec & list)
+void Reactor::HandleEvents(RegHandlerVec & l)
 {
-    if (list.size() > 0)
+	RegHandlerVec list;
+    if (l.size() > 0)
     {
+		list.swap(l); // clear all pending events
         RegHandlerVecIter iter;
         for (iter = list.begin(); iter != list.end(); ++iter)
         {
             RegHandler * p = *iter;
             if (p) ProcessOneHandler(*p);
         }
-        list.clear();
     }
 }
 
@@ -183,7 +190,7 @@ int Reactor::RemoveHandler(EventHandler * p, EvMask mask)
     }
     else if (reg > 0)
     {
-        rh.events -= reg;
+        rh.events ^= reg;
         if (rh.state == EventHandler::NORMAL_STAT)
             impl_->ModifyEvents(p->Handle(), rh.events);
     }
@@ -195,6 +202,7 @@ int Reactor::SuspendHandler(EventHandler * p)
     assert(p);
     if (!p || !loop_) return -1;
     EventHandlerMapIter iter = handlerMap_.find(p->Handle());
+    if (iter == handlerMap_.end()) return -1;
     RegHandler & rh = iter->second;
     if (rh.handler != p)
     {// TODO log
@@ -211,6 +219,7 @@ int Reactor::ResumeHandler(EventHandler * p)
     assert(p);
     if (!p || !loop_) return -1;
     EventHandlerMapIter iter = handlerMap_.find(p->Handle());
+    if (iter == handlerMap_.end()) return -1;
     RegHandler & rh = iter->second;
     assert(rh.handler == p);
     if (rh.handler != p)
@@ -221,6 +230,32 @@ int Reactor::ResumeHandler(EventHandler * p)
         impl_->RegisterHandle(p->Handle(), rh.events);
     rh.state = EventHandler::NORMAL_STAT;
     return 0;
+}
+
+int Reactor::TriggerHandler(EventHandler * p, EvMask mask)
+{
+    assert(p);
+    if (!p || !loop_) return -1;
+    EventHandlerMapIter iter = handlerMap_.find(p->Handle());
+    if (iter == handlerMap_.end()) return -1;
+    RegHandler & rh = iter->second;
+    assert(rh.handler == p);
+    if (rh.handler != p)
+    {// TODO log
+        return -1;
+	}
+    if (rh.state == EventHandler::NORMAL_STAT)
+	{
+		bool addToList = true;
+		// already in the return list
+		if (rh.revents > 0) addToList = false;
+		rh.revents |= (mask & EventHandler::ALL_MASK);
+		// add to the list
+		if (rh.revents > 0 && addToList)
+			evList_.push_back(&rh);
+		return 0;
+	}
+	return -1;
 }
 
 TIMER Reactor::RegisterTimer(EventHandler * p, MSEC delay, TIMER id)

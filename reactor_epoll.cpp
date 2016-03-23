@@ -69,8 +69,10 @@ int EPollReactor::ModifyEvents(HANDLE h, EvMask events)
 {
     if (h == INVALID_HANDLE) return -1;
     unsigned tevents = 0;
+	// get the modified event mask
     if (events & EventHandler::READ_MASK) tevents |= EPOLLIN;
     if (events & EventHandler::WRITE_MASK) tevents |= EPOLLOUT;
+	// modify
     struct epoll_event e; e.events = tevents; e.data.fd = h;
     int ret = EPoll::epoll_ctl(fd_, EPOLL_CTL_MOD, h, &e);
     if (ret)
@@ -90,6 +92,7 @@ int EPollReactor::Demultiplex(EventHandlerMap & handlers,
     {
         for (int i = 0; i < ret; ++i)
         {
+			bool addToList = true;
             struct epoll_event & e = revents_[i];
             HANDLE h = e.data.fd;
             EventHandlerMapIter iter = handlers.find(h);
@@ -97,6 +100,7 @@ int EPollReactor::Demultiplex(EventHandlerMap & handlers,
             RegHandler & rh = iter->second;
             EventHandler * handler = rh.handler;
             if (!handler) continue;
+			if (rh.revents > 0) addToList = false; // already in the return list
             if (((e.events & EPOLLERR) || (e.events & EPOLLHUP)) && (!(e.events & EPOLLIN)))
                 rh.revents |= EventHandler::ERROR_MASK;
             else
@@ -106,7 +110,7 @@ int EPollReactor::Demultiplex(EventHandlerMap & handlers,
                 if (e.events & EPOLLOUT)
                     rh.revents |= EventHandler::WRITE_MASK;
             }
-            list.push_back(&rh);
+			if (addToList) list.push_back(&rh); // add to return list
         }
     }
     return ret;

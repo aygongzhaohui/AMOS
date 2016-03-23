@@ -68,6 +68,15 @@ namespace amos
             return 0;
         }
 
+		virtual int TriggerHandler(EventHandler * p, EvMask mask)
+		{
+            if (!p) return -1;
+            ScopeLock lock(mqlock_);
+            mq_.push_back(ReactorMsg(RMSG_TRIGGER, p, mask));
+			LOG_DEBUG("Send RMSG_TRIGGER msg to reactor mq, handle=%d, handler=0x%lx", p->Handle(), (unsigned long)p);
+            return 0;
+		}
+
 
         virtual TIMER RegisterTimer(EventHandler * p, MSEC delay)
         {

@@ -29,11 +29,21 @@ namespace amos
 
         int Accept(SocketStream & ss);
 
+		HANDLE Handle() const
+		{
+			return lsocket_.fd();
+		}
+
+		int ReuseAddr(bool enable)
+		{
+			return lsocket_.set_reuse_addr(enable);
+		}
+
     private:
         std::string path_;
         std::string ip_;
         int port_;
-        HANDLE lfd_;
+		CSocket lsocket_;
         struct sockaddr_in addrin_;
         struct sockaddr_un addrun_;
         struct sockaddr * paddr_;

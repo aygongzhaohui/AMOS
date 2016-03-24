@@ -6,6 +6,7 @@
  * @date 2016-02-21
  */
 
+#include "logger.h"
 #include "reactor.h"
 
 using namespace amos;
@@ -131,17 +132,21 @@ int Reactor::RegisterHandler(EventHandler * p,
         if (!ret)
         {
             RegHandler& rh = handlerMap_[p->Handle()];
+			rh.handler = p;
             rh.events = mask;
             p->SetDeleter(creator);
-            p->AddRef();// add the ref count
+            p->AddRef(); // add the ref count
+			p->reactor(this);// set reactor to handler
             return 0;
         }
+		LOG_DEBUG("Reg handler failed");
         return -1;
     }
     // modify the registered event if is in the handler map
     RegHandler & rh = iter->second;
     if (rh.handler != p)
     {// TODO log
+		LOG_DEBUG("Wrong handler ptr");
         return -1;
     }
 	// has NOIO_MASK then couldn't modify I/O events
@@ -186,6 +191,7 @@ int Reactor::RemoveHandler(EventHandler * p, EvMask mask)
             timerQ_.RemoveTimer(*titer);
         p->DelRef();// decrease the ref count
         handlerMap_.erase(iter);
+		LOG_INFO("Handler=0x%lx removed", (long)p);
         return 0;
     }
     else if (reg > 0)

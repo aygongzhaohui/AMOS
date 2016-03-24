@@ -89,7 +89,7 @@ namespace amos
             return 0;
         }
 
-        virtual HANDLE Handle() const
+        virtual HANDLE Handle()
         {
             return INVALID_HANDLE;
         }
@@ -100,7 +100,7 @@ namespace amos
 
         Reactor * reactor(Reactor * p = NULL)
         {
-            reactor_ = p;
+			if (p) reactor_ = p;
             return reactor_;
         }
 

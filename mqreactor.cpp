@@ -24,13 +24,6 @@ void MQReactor::ProcessMqMsg()
         ReactorMsg &msg = tmq[i];
         HANDLE h = msg.handle;
         EventHandler * handler = msg.handler;
-        // avoid invalid handler ptr
-        EventHandlerMapIter iter = handlerMap_.find(h);
-        if ((iter != handlerMap_.end()) &&
-                (iter->second.handler == handler))
-        {
-            continue;
-        }
         switch (msg.mtype)
         {
         case RMSG_REGHANDLER:
@@ -38,33 +31,41 @@ void MQReactor::ProcessMqMsg()
                 EvMask mask = (EvMask)msg.arg0.val;
                 EventHandlerCreator * creator = (EventHandlerCreator*)msg.arg1.ptr;
                 LOG_DEBUG("Handle Reactor msg RMSG_REGHANDLER, handle=%d, handler=0x%lx, mask=%d, creator=0x%lx",
-                        handler->Handle(), (unsigned long)handler, mask, (unsigned long)creator);
+                        h, (unsigned long)handler, mask, (unsigned long)creator);
                 if (Reactor::RegisterHandler(handler, mask, creator))
                 {// TODO log print
                 }
             }
             break;
         case RMSG_RMHANDLER:
+			if (handlerMap_.find(h) != handlerMap_.end())
             {
                 EvMask mask = (EvMask)msg.arg0.val;
                 LOG_DEBUG("Handle Reactor msg RMSG_RMHANDLER, handle=%d, handler=0x%lx, mask=%d",
-                        handler->Handle(), (unsigned long)handler, mask);
+                        h, (unsigned long)handler, mask);
                 if (Reactor::RemoveHandler(handler, mask))
                 {// TODO log print
                 }
             }
             break;
         case RMSG_SUSPEND:
-            LOG_DEBUG("Handle Reactor msg RMSG_SUSPEND, handle=%d, handler=0x%lx",
-                    handler->Handle(), (unsigned long)handler);
-            Reactor::SuspendHandler(handler);
+			if (handlerMap_.find(h) != handlerMap_.end())
+			{
+				LOG_DEBUG("Handle Reactor msg RMSG_SUSPEND, handle=%d, handler=0x%lx",
+						h, (unsigned long)handler);
+				Reactor::SuspendHandler(handler);
+			}
             break;
         case RMSG_RESUME:
-            LOG_DEBUG("Handle Reactor msg RMSG_RESUME, handle=%d, handler=0x%lx",
-                    handler->Handle(), (unsigned long)handler);
-            Reactor::ResumeHandler(handler);
+			if (handlerMap_.find(h) != handlerMap_.end())
+			{
+				LOG_DEBUG("Handle Reactor msg RMSG_RESUME, handle=%d, handler=0x%lx",
+						h, (unsigned long)handler);
+				Reactor::ResumeHandler(handler);
+			}
             break;
         case RMSG_REGTIMER:
+			if (handlerMap_.find(h) != handlerMap_.end())
             {
                 LOG_DEBUG("Handle Reactor msg RMSG_REGTIMER, handle=%d, handler=0x%lx",
                         handler->Handle(), (unsigned long)handler);
@@ -76,6 +77,7 @@ void MQReactor::ProcessMqMsg()
             }
             break;
         case RMSG_RMTIMER:
+			if (handlerMap_.find(h) != handlerMap_.end())
             {
                 LOG_DEBUG("Handle Reactor msg RMSG_RMTIMER, handle=%d, handler=0x%lx",
                         handler->Handle(), (unsigned long)handler);

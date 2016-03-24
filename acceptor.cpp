@@ -19,7 +19,8 @@ using namespace amos;
 Acceptor::Acceptor(const std::string & path) : path_(path), port_(-1)
 {
     assert(path_.length());
-    lfd_ = socket(PF_LOCAL, SOCK_STREAM, 0);
+    HANDLE lfd = socket(PF_LOCAL, SOCK_STREAM, 0);
+	lsocket_.open(lfd);
     addrun_.sun_family = AF_LOCAL;
     strncpy(addrun_.sun_path, path.c_str(), sizeof(addrun_.sun_path));
     paddr_ = (struct sockaddr*)&addrun_;
@@ -28,8 +29,8 @@ Acceptor::Acceptor(const std::string & path) : path_(path), port_(-1)
 
 Acceptor::Acceptor(const std::string & ip, unsigned port) : ip_(ip), port_(port)
 {
-    assert(port < 0);
-    lfd_ = socket(PF_INET, SOCK_STREAM, 0);
+    HANDLE lfd = socket(PF_INET, SOCK_STREAM, 0);
+	lsocket_.open(lfd);
     addrin_.sin_family = AF_INET;
     addrin_.sin_port = htons(port_);
     if (ip_.length() > 0)
@@ -42,18 +43,18 @@ Acceptor::Acceptor(const std::string & ip, unsigned port) : ip_(ip), port_(port)
 
 int Acceptor::Open()
 {
-    if (lfd_ < 0)
+    if (lsocket_.fd() < 0)
     {
         perror("Listen socket create failed");
         return -1;
     }
-    int r = bind(lfd_, paddr_, addrlen_);
+    int r = bind(lsocket_.fd(), paddr_, addrlen_);
     if (r < 0)
     {
         perror("Acceptor bind failed");
         return -1;
     }
-    r = listen(lfd_, 5);
+    r = listen(lsocket_.fd(), 5);
     if (r < 0)
     {
         perror("Acceptor listen failed");
@@ -64,8 +65,8 @@ int Acceptor::Open()
 
 int Acceptor::Accept(SocketStream & ss)
 {
-    if (lfd_ < 0) return -1;
-    HANDLE h = accept(lfd_, NULL, NULL);
+    if (lsocket_.fd() < 0) return -1;
+    HANDLE h = accept(lsocket_.fd(), NULL, NULL);
     if (h < 0) return -1;
     ss.open(h);
     return 0;

@@ -31,7 +31,7 @@ namespace amos
         virtual int RegisterHandler(EventHandler * p,
                 EvMask mask, EventHandlerCreator * creator = NULL)
         {
-            if (!p) return -1;
+            if (!p || p->Handle() < 0) return -1;
             ScopeLock lock(mqlock_);
             mq_.push_back(ReactorMsg(
                         RMSG_REGHANDLER, p, (long)mask, (void *)creator));
@@ -42,7 +42,7 @@ namespace amos
 
         virtual int RemoveHandler(EventHandler * p, EvMask mask)
         {
-            if (!p) return -1;
+            if (!p || p->Handle() < 0) return -1;
             ScopeLock lock(mqlock_);
             mq_.push_back(ReactorMsg(RMSG_RMHANDLER, p, (long)mask));
 			LOG_DEBUG("Send RMSG_RMHANDLER msg to reactor mq, handle=%d, handler=0x%lx, mask=%d",
@@ -52,7 +52,7 @@ namespace amos
 
         virtual int SuspendHandler(EventHandler * p)
         {
-            if (!p) return -1;
+            if (!p || p->Handle() < 0) return -1;
             ScopeLock lock(mqlock_);
             mq_.push_back(ReactorMsg(RMSG_SUSPEND, p));
 			LOG_DEBUG("Send RMSG_SUSPEND msg to reactor mq, handle=%d, handler=0x%lx", p->Handle(), (unsigned long)p);
@@ -61,7 +61,7 @@ namespace amos
 
         virtual int ResumeHandler(EventHandler * p)
         {
-            if (!p) return -1;
+            if (!p || p->Handle() < 0) return -1;
             ScopeLock lock(mqlock_);
             mq_.push_back(ReactorMsg(RMSG_RESUME, p));
 			LOG_DEBUG("Send RMSG_RESUME msg to reactor mq, handle=%d, handler=0x%lx", p->Handle(), (unsigned long)p);
@@ -70,7 +70,7 @@ namespace amos
 
 		virtual int TriggerHandler(EventHandler * p, EvMask mask)
 		{
-            if (!p) return -1;
+            if (!p || p->Handle() < 0) return -1;
             ScopeLock lock(mqlock_);
             mq_.push_back(ReactorMsg(RMSG_TRIGGER, p, mask));
 			LOG_DEBUG("Send RMSG_TRIGGER msg to reactor mq, handle=%d, handler=0x%lx", p->Handle(), (unsigned long)p);

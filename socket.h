@@ -30,8 +30,14 @@ namespace amos
         int set_send_timeout(unsigned millsec);
         int set_recv_timeout(unsigned millsec);
 
-        HANDLE fd()
+        HANDLE fd() const
         { return fd_; }
+
+		virtual int open(HANDLE h)
+		{
+			fd_ = h;
+			return 0;
+		}
 
         virtual void close()
         {

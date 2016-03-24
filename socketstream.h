@@ -24,7 +24,7 @@ namespace amos
     public:
         SocketStream();
 
-        int open(HANDLE sockfd);
+        virtual int open(HANDLE sockfd);
 
         int set_tcp_nodelay(bool on);
 

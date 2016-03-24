@@ -34,14 +34,22 @@ void TPReactor::RunEventLoop()
         {// be slave
             RegHandler * rh = evList_[pos_++];
             assert(rh);
-            sem_post(&semaphore_); // give up the semphore
-            if (rh) ProcessOneHandler(*rh);
+			if (rh)
+			{
+				SuspendHandler(rh->handler);
+				sem_post(&semaphore_); // give up the semphore
+				ProcessOneHandler(*rh);
+				ResumeHandler(rh->handler);
+			}
+			else
+				sem_post(&semaphore_); // give up the semphore
         }
         else
         {// be master
             //0. clear the pending
+			assert(pos_ == evList_.size()); 
             evList_.clear();
-            assert(pos_ == 0); pos_ = 0;
+            pos_ = 0;
             //1 process all msgs in mq
             ProcessMqMsg();
             //2 poll I/O events
@@ -49,16 +57,21 @@ void TPReactor::RunEventLoop()
             //3 poll timer events
             timerQ_.Schedule(evList_);
             //3.0 get one handler
-            RegHandler * rh = evList_[pos_++];
-            assert(rh->handler);
-            //3.1 suspend handler
-            SuspendHandler(rh->handler);
-            //3.2 give up the semphore
-            sem_post(&semaphore_);
-            //3.3 process revents of the handler
-            ProcessOneHandler(*rh);
-            //3.4 resume the handler
-            ResumeHandler(rh->handler);
+			if (evList_.size() > 0)
+			{
+				RegHandler * rh = evList_[pos_++];
+				assert(rh->handler);
+				//3.1 suspend handler
+				SuspendHandler(rh->handler);
+				//3.2 give up the semphore
+				sem_post(&semaphore_);
+				//3.3 process revents of the handler
+				ProcessOneHandler(*rh);
+				//3.4 resume the handler
+				ResumeHandler(rh->handler);
+			}
+			else
+				sem_post(&semaphore_);
         }
     }
 }

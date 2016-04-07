@@ -135,7 +135,7 @@ namespace amos
         {
         }
         EventHandler * handler;
-        EventHandler::State state;
+        volatile EventHandler::State state;
         EvMask events;
         EvMask revents;
         TimerSet timers;

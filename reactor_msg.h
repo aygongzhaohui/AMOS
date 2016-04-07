@@ -10,6 +10,7 @@
 #define _AMOS_REACTOR_MSG_H_
 
 #include "event_handler.h"
+#include <vector>
 
 namespace amos
 {
@@ -65,6 +66,7 @@ namespace amos
         union { long val; void *ptr; } arg1;
     };
 
+	typedef std::vector<ReactorMsg> ReactorMsgVec;
 }
 
 #endif

@@ -56,19 +56,14 @@ int EPollReactor::RegisterHandle(HANDLE h, EvMask events)
 int EPollReactor::RemoveHandle(HANDLE h)
 {
     if (h == INVALID_HANDLE) return -1;
-    int ret = EPoll::epoll_ctl(fd_, EPOLL_CTL_DEL, h, NULL);
-    if (ret)
-    {
-        perror("[EPollReactor::UnregisterHandler] epoll_ctl failed");
-        return -1;
-    }
+    EPoll::epoll_ctl(fd_, EPOLL_CTL_DEL, h, NULL);
     return 0;
 }
 
 int EPollReactor::ModifyEvents(HANDLE h, EvMask events)
 {
     if (h == INVALID_HANDLE) return -1;
-    unsigned tevents = 0;
+    unsigned tevents = EPOLLERR | EPOLLHUP;
 	// get the modified event mask
     if (events & EventHandler::READ_MASK) tevents |= EPOLLIN;
     if (events & EventHandler::WRITE_MASK) tevents |= EPOLLOUT;
@@ -76,10 +71,10 @@ int EPollReactor::ModifyEvents(HANDLE h, EvMask events)
     struct epoll_event e; e.events = tevents; e.data.fd = h;
     int ret = EPoll::epoll_ctl(fd_, EPOLL_CTL_MOD, h, &e);
     if (ret)
-    {
+	{
         perror("[EPollReactor::ModifyEvents] epoll_ctl failed");
-        return -1;
-    }
+		return -1;
+	}
     return 0;
 }
 

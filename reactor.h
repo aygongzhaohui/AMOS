@@ -25,7 +25,7 @@ namespace amos
     class Reactor
     {
     protected:
-        static const unsigned DEFAULT_REACT_INTERVAL = 10;
+        static const unsigned DEFAULT_REACT_INTERVAL = 100;
 
     public:
         Reactor(ReactorImpl * impl);
@@ -48,6 +48,7 @@ namespace amos
          * @return
          */
         virtual int RemoveHandler(EventHandler * p, EvMask mask);
+        virtual int RemoveHandler(EventHandler * p, HANDLE h, EvMask mask);
 
         virtual TIMER RegisterTimer(EventHandler * p,
                 MSEC delay, TIMER id = TimerQ::INVALID_TIMER);

@@ -2,10 +2,10 @@ CXX = g++
 AR = ar
 
 INCLUDES = -I./ 
-TARGETS = test
-OBJS = basedef.o reactor.o socket.o socketstream.o acceptor.o logger.o thread.o reactor_epoll.o reactor_poll.o mqreactor.o tsreactor.o tpreactor.o demultiplex.o event_handler.o
+TARGETS=EchoSvr Clnt
+OBJS = basedef.o reactor.o socket.o socketstream.o acceptor.o logger.o thread.o reactor_epoll.o reactor_poll.o mqreactor.o tsreactor.o tpreactor.o demultiplex.o event_handler.o timer_q.o reactor_mq.o
 
-LDFLAGS = -lpthread
+LDFLAGS = -lpthread -lrt
 
 CXXFLAGS = -g -Wall $(INCLUDES)
 #编译可执行程序
@@ -20,9 +20,15 @@ MAKETARGETS = $(EXETARGETS)
 #防止all clean文件时，make all或者make clean执行失败
 .PHONY: all clean $(TARGETS)
 
+
 all : $(TARGETS)
 
-$(TARGETS) : $(OBJS)
+
+EchoSvr : $(OBJS) echo_svr.o
+	$(MAKETARGETS)
+
+Clnt : clnt.o
+	$(MAKETARGETS)
 
 #生成依赖文件，头文件修改时重新编译依赖源文件
 %.d:%.c

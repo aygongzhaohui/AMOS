@@ -21,14 +21,14 @@ Reactor::Reactor(ReactorImpl * impl)
 void Reactor::PollIOEvents(RegHandlerVec & list)
 {
     MSEC nextTimeout = 0;
-	// if there are pending events, it will poll without
-	// waiting for timeout
-	if (list.size() == 0)
-	{
-		nextTimeout = timerQ_.GetTimeout();
-		if (nextTimeout > DEFAULT_REACT_INTERVAL)
-			nextTimeout = DEFAULT_REACT_INTERVAL;
-	}
+    // if there are pending events, it will poll without
+    // waiting for timeout
+    if (list.size() == 0)
+    {
+        nextTimeout = timerQ_.GetTimeout();
+        if (nextTimeout > DEFAULT_REACT_INTERVAL)
+            nextTimeout = DEFAULT_REACT_INTERVAL;
+    }
     impl_->Demultiplex(handlerMap_, list, nextTimeout);
 }
 
@@ -82,7 +82,7 @@ void Reactor::ProcessOneHandler(RegHandler & rh)
     }
     else
     {
-        if (ev & EventHandler::READ_MASK)
+        if(ev & EventHandler::READ_MASK)
         {
             int ret = handler->HandleInput(handler->Handle());
             if (ret)
@@ -100,14 +100,15 @@ void Reactor::ProcessOneHandler(RegHandler & rh)
         rh.state = EventHandler::CLOSED_STAT;
         handler->HandleClose(handler->Handle(), closeMask);
     }
+    rh.revents = 0;
 }
 
 void Reactor::HandleEvents(RegHandlerVec & l)
 {
-	RegHandlerVec list;
+    RegHandlerVec list;
     if (l.size() > 0)
     {
-		list.swap(l); // clear all pending events
+        list.swap(l); // clear all pending events
         RegHandlerVecIter iter;
         for (iter = list.begin(); iter != list.end(); ++iter)
         {
@@ -126,31 +127,31 @@ int Reactor::RegisterHandler(EventHandler * p,
     EventHandlerMapIter iter = handlerMap_.find(p->Handle());
     if (iter == handlerMap_.end())
     {
-		int ret = 0;
-		if ((mask & EventHandler::NOIO_MASK) == 0)
-			ret = impl_->RegisterHandle(p->Handle(), mask);
+        int ret = 0;
+        if ((mask & EventHandler::NOIO_MASK) == 0)
+            ret = impl_->RegisterHandle(p->Handle(), mask);
         if (!ret)
         {
             RegHandler& rh = handlerMap_[p->Handle()];
-			rh.handler = p;
+            rh.handler = p;
             rh.events = mask;
             p->SetDeleter(creator);
             p->AddRef(); // add the ref count
-			p->reactor(this);// set reactor to handler
+            p->reactor(this);// set reactor to handler
             return 0;
         }
-		LOG_DEBUG("Reg handler failed");
+        LOG_DEBUG("Reg handler failed");
         return -1;
     }
     // modify the registered event if is in the handler map
     RegHandler & rh = iter->second;
     if (rh.handler != p)
     {// TODO log
-		LOG_DEBUG("Wrong handler ptr");
+        LOG_DEBUG("Wrong handler ptr");
         return -1;
     }
-	// has NOIO_MASK then couldn't modify I/O events
-	if (rh.events & EventHandler::NOIO_MASK) return -1;
+    // has NOIO_MASK then couldn't modify I/O events
+    if (rh.events & EventHandler::NOIO_MASK) return -1;
     EvMask reg = (mask ^ rh.events) & mask;
     if (reg > 0)
     {
@@ -174,28 +175,41 @@ int Reactor::RemoveHandler(EventHandler * p, EvMask mask)
 {
     assert(p);
     if (!p || !loop_) return -1;
-    EventHandlerMapIter iter = handlerMap_.find(p->Handle());
+    return RemoveHandler(p, p->Handle(), mask);
+}
+
+int Reactor::RemoveHandler(EventHandler * p, HANDLE h, EvMask mask)
+{
+    assert(p);
+    if (!p || !loop_) return -1;
+    if (h == INVALID_HANDLE)
+    {
+        LOG_ERROR("[RemoveHandler] Remove handler failed, invalid handle");
+        return -1;
+    }
+    EventHandlerMapIter iter = handlerMap_.find(h);
     if (iter == handlerMap_.end()) return 0;
     RegHandler & rh = iter->second;
     if (rh.handler != p)
     {// TODO log
+        LOG_ERROR("[RemoveHandler] unmatch the handler");
         return -1;
     }
     EvMask reg = rh.events & mask;
-    if (reg == rh.events)
-    {
-        impl_->RemoveHandle(p->Handle());
+    if (reg == rh.events || p->Handle() == INVALID_HANDLE)
+    {// remove handler
+        impl_->RemoveHandle(h);
         // clear all the timer on this handler
         TimerSetIter titer = rh.timers.begin();
         for (; titer != rh.timers.end(); ++titer)
             timerQ_.RemoveTimer(*titer);
         p->DelRef();// decrease the ref count
         handlerMap_.erase(iter);
-		LOG_INFO("Handler=0x%lx removed", (long)p);
+        LOG_INFO("Handler=0x%lx removed", (long)p);
         return 0;
     }
     else if (reg > 0)
-    {
+    {// remove registered events
         rh.events ^= reg;
         if (rh.state == EventHandler::NORMAL_STAT)
             impl_->ModifyEvents(p->Handle(), rh.events);
@@ -215,8 +229,10 @@ int Reactor::SuspendHandler(EventHandler * p)
         return -1;
     }
     if (rh.state == EventHandler::NORMAL_STAT)
-        impl_->RemoveHandle(p->Handle());
-    rh.state = EventHandler::SUSPEND_STAT;
+    {
+        impl_->ModifyEvents(p->Handle(), EventHandler::NONE_MASK);
+        rh.state = EventHandler::SUSPEND_STAT;
+    }
     return 0;
 }
 
@@ -233,8 +249,10 @@ int Reactor::ResumeHandler(EventHandler * p)
         return -1;
     }
     if (rh.state == EventHandler::SUSPEND_STAT)
-        impl_->RegisterHandle(p->Handle(), rh.events);
-    rh.state = EventHandler::NORMAL_STAT;
+    {
+        impl_->ModifyEvents(p->Handle(), rh.events);
+        rh.state = EventHandler::NORMAL_STAT;
+    }
     return 0;
 }
 
@@ -249,19 +267,19 @@ int Reactor::TriggerHandler(EventHandler * p, EvMask mask)
     if (rh.handler != p)
     {// TODO log
         return -1;
-	}
+    }
     if (rh.state == EventHandler::NORMAL_STAT)
-	{
-		bool addToList = true;
-		// already in the return list
-		if (rh.revents > 0) addToList = false;
-		rh.revents |= (mask & EventHandler::ALL_MASK);
-		// add to the list
-		if (rh.revents > 0 && addToList)
-			evList_.push_back(&rh);
-		return 0;
-	}
-	return -1;
+    {
+        bool addToList = true;
+        // already in the return list
+        if (rh.revents > 0) addToList = false;
+        rh.revents |= (mask & EventHandler::ALL_MASK);
+        // add to the list
+        if (rh.revents > 0 && addToList)
+            evList_.push_back(&rh);
+        return 0;
+    }
+    return -1;
 }
 
 TIMER Reactor::RegisterTimer(EventHandler * p, MSEC delay, TIMER id)
@@ -269,7 +287,7 @@ TIMER Reactor::RegisterTimer(EventHandler * p, MSEC delay, TIMER id)
     assert(p);
     if (!p) return TimerQ::INVALID_TIMER;
     EventHandlerMapIter iter = handlerMap_.find(p->Handle());
-	if (iter == handlerMap_.end()) return TimerQ::INVALID_TIMER;
+    if (iter == handlerMap_.end()) return TimerQ::INVALID_TIMER;
     RegHandler & rh = iter->second;
     if (rh.handler != p)
     {// TODO log

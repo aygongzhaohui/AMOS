@@ -60,6 +60,7 @@ int Acceptor::Open()
         perror("Acceptor listen failed");
         return -1;
     }
+	lsocket_.set_nonblock(true);
     return 0;
 }
 

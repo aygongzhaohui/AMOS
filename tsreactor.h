@@ -50,7 +50,7 @@ namespace amos
                 return MQReactor::RemoveHandler(p, mask);
 			}
         }
-
+/*
         virtual int SuspendHandler(EventHandler * p)
         {
             if (IsReactorThread())
@@ -78,6 +78,7 @@ namespace amos
                 return MQReactor::ResumeHandler(p);
 			}
         }
+*/
 
         virtual int TriggerHandler(EventHandler * p, EvMask mask)
         {

@@ -13,6 +13,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <vector>
 
 using namespace amos;
 
@@ -47,7 +48,7 @@ public:
 	{
 		reactor()->RemoveHandler(this, EventHandler::ALL_MASK);
 		ss_.close();
-		LOG_INFO("fd=%d connection closed", h);
+		LOG_INFO("[HandleClose] fd=%d", h);
 		return 0;
 	}
 
@@ -96,6 +97,8 @@ public:
 			{
 				delete p; return -1;
 			}
+			p->SocketStream().set_nonblock(true);
+			p->SocketStream().set_tcp_nodelay(true);
 			if (reactor()->RegisterHandler(p, EventHandler::READ_MASK, this) < 0)
 			{
 				delete p; return -1;
@@ -110,10 +113,43 @@ private:
 	amos::Acceptor * pAcceptor_;
 };
 
-int main()
+class ReactThread : public Thread
 {
+private:
+	amos::Reactor * reactor_;
+
+public:
+	ReactThread(amos::Reactor * p = NULL) : reactor_(p)
+	{
+	}
+
+	void SetReactor(amos::Reactor * p)
+	{
+		reactor_ = p;
+	}
+
+protected:
+	void Run()
+	{
+		if (reactor_)
+			reactor_->RunEventLoop();
+	}
+};
+
+std::vector<ReactThread *> gThrdPool;
+int main(int argc, char ** argv)
+{
+	if (argc < 3)
+	{
+		printf("<Usage> EchoSvr port thread_number\n");
+		return 0;
+	}
 	std::string svrIp = "";
-	unsigned svrPort = 9999;
+	unsigned svrPort = 9999, thrdcnt = 1;
+	svrPort = atoi(argv[1]);
+	thrdcnt = atoi(argv[2]);
+
+	// initialize
 	EPollReactor epoller;
 	TPReactor reactor(&epoller);
 	amos::Acceptor svrAcceptor(svrIp, svrPort);
@@ -128,6 +164,16 @@ int main()
 	{
 		perror("register svr handler failed");
 		exit(2);
+	}
+
+	for (unsigned i = 0; i < thrdcnt - 1; ++ i)
+	{
+		ReactThread * p = new ReactThread(&reactor);
+		if (p)
+		{
+			gThrdPool.push_back(p);
+			p->StartThread();
+		}
 	}
 	reactor.RunEventLoop();
 	return 0;
